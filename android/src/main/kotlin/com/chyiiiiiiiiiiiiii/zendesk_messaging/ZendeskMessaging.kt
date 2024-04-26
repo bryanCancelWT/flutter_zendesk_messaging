@@ -51,7 +51,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         )
     }
 
-    /// Show
+    /// Show the conversation
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/getting_started/#show-the-conversation
     /// 
     /// If Zendesk.initialize() is successful, you can use the code snippets below anywhere in your app to show the conversation screen.
@@ -61,7 +61,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         println("$tag - show")
     }
 
-    /// Get Unread Message Count
+    /// Unread Messages
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/getting_started/#unread-messages
     /// 
     /// When the user receives a new message, an event is triggered with the updated total number of unread messages. 
@@ -87,24 +87,31 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     ///
     /// Authentication
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#authentication
+    ///
     /// The Zendesk SDK allows authentication of end users so that their identity can be verified by agents using Zendesk. 
     /// A detailed article on the steps to set up authentication for your account is here. 
     /// The steps mentioned in this article should be completed before beginning the steps below.
+    ///
     /// You can find a demo app demonstrating the capability of user authentication on our Demo app repository.
     ///
     /// Authentication Errors
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#authentication-errors
+    ///
     /// All authentication errors can be observed through Events.
+    ///
     /// The most common error that will happen here is a HTTP 401 error. 
     /// In this case a new JWT should be generated and a call made to loginUser.
     ///
     /// Authentication Lifecycle
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#authentication-lifecycle
+    ///
     /// Once loginUser is successful, the user remains authenticated until the token expires or an error occurs.
+    ///
     /// On expiry, the server will send back a 401 HTTP error, which can be caught by using the event listener. 
     /// The user will not be able to interact with Zendesk anymore and will need to be authenticated again using loginUser. 
     /// If the now unauthenticated user tries to open a conversation, they will be presented with the conversation screen and an error. 
     /// The conversation itself will not be shown.
+    ///
     /// As the SDK doesn't renew the token itself, you will have to handle the re-authentication process.
     ///
     ///
@@ -136,9 +143,9 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#logoutuser
     ///
     /// To unauthenticate a user call the logoutUser API.
+    ///
     /// This is primarily for authenticated users but calling logoutUser for an unauthenticated user will clear all of their data, 
     /// including their conversation history. 
-    ///
     /// Please note that there is no way for us to recover this data, so only use this for testing purposes. 
     /// The next time the unauthenticated user enters the conversation screen a new user and conversation will be created for them.
     fun logoutUser() {
