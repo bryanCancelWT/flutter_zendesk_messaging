@@ -46,14 +46,14 @@ class ZendeskError {
 
   /// The user info dictionary.
   /// - Map<String,dynamic> natively
-  final Map<String, String>? userInfoIOS;
+  final Map<String?, String?>? userInfoIOS;
 
   /// A string containing the localized description of the error.
   final String? localizedDescriptionIOS;
 
   /// An array containing the localized titles of buttons appropriate for displaying in an alert panel.
   /// - NULLABLE natively
-  final List<String>? localizedRecoveryOptionsIOS;
+  final List<String?>? localizedRecoveryOptionsIOS;
 
   /// A string containing the localized recovery suggestion for the error.
   /// - NULLABLE natively
@@ -111,12 +111,18 @@ abstract class ZendeskApi {
   void getUnreadMessageCount();
 
   /// this goes pretty much only one way - return an error or don't
-  Future<ZendeskError?> invalidate();
-  Future<ZendeskError?> show();
-  Future<ZendeskError?> setConversationTags(List<String> tags);
-  Future<ZendeskError?> clearConversationTags();
-  Future<ZendeskError?> setConversationFields(Map<String, String> fields);
-  Future<ZendeskError?> clearConversationFields();
+  @async
+  ZendeskError? invalidate();
+  @async
+  ZendeskError? show();
+  @async
+  ZendeskError? setConversationTags(List<String> tags);
+  @async
+  ZendeskError? clearConversationTags();
+  @async
+  ZendeskError? setConversationFields(Map<String, String> fields);
+  @async
+  ZendeskError? clearConversationFields();
 }
 
 @FlutterApi()
