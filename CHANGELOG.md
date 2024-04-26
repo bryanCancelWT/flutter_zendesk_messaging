@@ -1,3 +1,7 @@
+## 2.9.0
+
+* Upgrade zendesk-messaging sdk version to 2.19.1 to have access to iOS privacy manifest
+
 ## 2.8.0
 
 * Upgrade zendesk-messaging sdk version to 2.16.0
