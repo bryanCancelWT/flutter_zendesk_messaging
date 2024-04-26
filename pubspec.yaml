@@ -5,7 +5,7 @@ homepage: https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging
 
 # TO RE-RUN PIGEON
 # https://blog.codemagic.io/working-with-native-elements/
-# flutter pub run pigeon --input pigeons/zendesk_api.dart 
+# dart run pigeon --input pigeons/zendesk_pigeon.dart
 
 topics:
   - zendesk
@@ -25,6 +25,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
+  multiple_result: ^5.1.0
 
 dev_dependencies:
   flutter_test:

@@ -1,15 +1,15 @@
 import 'package:pigeon/pigeon.dart';
 
-/// flutter pub run pigeon --input pigeons/zendesk_api.dart
+/// flutter pub run pigeon --input pigeons/zendesk_pigeon.dart
 @ConfigurePigeon(
   PigeonOptions(
-    dartOut: 'lib/pigeons/zendesk_api.g.dart',
+    dartOut: 'lib/zendesk_pigeon.dart',
     dartOptions: DartOptions(),
-    kotlinOut: 'android/app/src/main/kotlin/com/wtzendesk/WTZendesk.g.kt',
+    kotlinOut: 'android/app/src/main/kotlin/com/zendeskpigeon/ZendeskPigeon.kt',
     kotlinOptions: KotlinOptions(),
-    swiftOut: 'ios/Runner/WTZendesk.g.swift',
+    swiftOut: 'ios/Runner/ZendeskPigeon.swift',
     swiftOptions: SwiftOptions(),
-    dartPackageName: 'com.wtzendesk.api',
+    dartPackageName: 'com.zendeskpigeon.api',
   ),
 )
 
@@ -95,6 +95,16 @@ class ZendeskError {
   });
 }
 
+class ZendeskUser {
+  final String? id;
+  final String? externalId;
+
+  ZendeskUser({
+    this.id,
+    this.externalId,
+  });
+}
+
 @HostApi()
 abstract class ZendeskApi {
   ///
@@ -105,10 +115,10 @@ abstract class ZendeskApi {
   ///
   ///
 
-  void initialize(String channelKey);
-  void loginUser(String jwt);
-  void logoutUser();
-  void getUnreadMessageCount();
+  void startInitialize(String channelKey);
+  void startLoginUser(String jwt);
+  void startLogoutUser();
+  void startGetUnreadMessageCount();
 
   /// this goes pretty much only one way - return an error or don't
   @async
@@ -127,19 +137,19 @@ abstract class ZendeskApi {
 
 @FlutterApi()
 abstract class ZendeskCallbacks {
-  /// complete [ZendeskApi.initialize]
+  /// complete [ZendeskApi.startInitialize]
   void initializeSuccess();
   void initializeError(ZendeskError error);
 
-  /// complete [ZendeskApi.loginUser]
-  void loginUserSuccess();
+  /// complete [ZendeskApi.startLoginUser]
+  void loginUserSuccess(ZendeskUser user);
   void loginUserError(ZendeskError error);
 
-  /// complete [ZendeskApi.logoutUser]
+  /// complete [ZendeskApi.startLogoutUser]
   void logoutUserSuccess();
   void logoutUserError(ZendeskError error);
 
-  /// complete [ZendeskApi.getUnreadMessageCount]
-  void getUnreadMessageCountSuccess();
+  /// complete [ZendeskApi.startGetUnreadMessageCount]
+  void getUnreadMessageCountSuccess(int count);
   void getUnreadMessageCountError(ZendeskError error);
 }

@@ -127,6 +127,32 @@ class ZendeskError {
   }
 }
 
+class ZendeskUser {
+  ZendeskUser({
+    this.id,
+    this.externalId,
+  });
+
+  String? id;
+
+  String? externalId;
+
+  Object encode() {
+    return <Object?>[
+      id,
+      externalId,
+    ];
+  }
+
+  static ZendeskUser decode(Object result) {
+    result as List<Object?>;
+    return ZendeskUser(
+      id: result[0] as String?,
+      externalId: result[1] as String?,
+    );
+  }
+}
+
 class _ZendeskApiCodec extends StandardMessageCodec {
   const _ZendeskApiCodec();
   @override
@@ -167,8 +193,8 @@ class ZendeskApi {
   ///
   ///
   ///
-  Future<void> initialize(String channelKey) async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.initialize';
+  Future<void> startInitialize(String channelKey) async {
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startInitialize';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -189,8 +215,8 @@ class ZendeskApi {
     }
   }
 
-  Future<void> loginUser(String jwt) async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.loginUser';
+  Future<void> startLoginUser(String jwt) async {
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startLoginUser';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -211,8 +237,8 @@ class ZendeskApi {
     }
   }
 
-  Future<void> logoutUser() async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.logoutUser';
+  Future<void> startLogoutUser() async {
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startLogoutUser';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -233,8 +259,8 @@ class ZendeskApi {
     }
   }
 
-  Future<void> getUnreadMessageCount() async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.getUnreadMessageCount';
+  Future<void> startGetUnreadMessageCount() async {
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startGetUnreadMessageCount';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -257,7 +283,7 @@ class ZendeskApi {
 
   /// this goes pretty much only one way - return an error or don't
   Future<ZendeskError?> invalidate() async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.invalidate';
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.invalidate';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -279,7 +305,7 @@ class ZendeskApi {
   }
 
   Future<ZendeskError?> show() async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.show';
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.show';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -301,7 +327,7 @@ class ZendeskApi {
   }
 
   Future<ZendeskError?> setConversationTags(List<String?> tags) async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.setConversationTags';
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.setConversationTags';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -323,7 +349,7 @@ class ZendeskApi {
   }
 
   Future<ZendeskError?> clearConversationTags() async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.clearConversationTags';
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.clearConversationTags';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -345,7 +371,7 @@ class ZendeskApi {
   }
 
   Future<ZendeskError?> setConversationFields(Map<String?, String?> fields) async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.setConversationFields';
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.setConversationFields';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -367,7 +393,7 @@ class ZendeskApi {
   }
 
   Future<ZendeskError?> clearConversationFields() async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.clearConversationFields';
+    const String __pigeon_channelName = 'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.clearConversationFields';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -396,6 +422,9 @@ class _ZendeskCallbacksCodec extends StandardMessageCodec {
     if (value is ZendeskError) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
+    } else if (value is ZendeskUser) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -406,6 +435,8 @@ class _ZendeskCallbacksCodec extends StandardMessageCodec {
     switch (type) {
       case 128: 
         return ZendeskError.decode(readValue(buffer)!);
+      case 129: 
+        return ZendeskUser.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -415,30 +446,30 @@ class _ZendeskCallbacksCodec extends StandardMessageCodec {
 abstract class ZendeskCallbacks {
   static const MessageCodec<Object?> pigeonChannelCodec = _ZendeskCallbacksCodec();
 
-  /// complete [ZendeskApi.initialize]
+  /// complete [ZendeskApi.startInitialize]
   void initializeSuccess();
 
   void initializeError(ZendeskError error);
 
-  /// complete [ZendeskApi.loginUser]
-  void loginUserSuccess();
+  /// complete [ZendeskApi.startLoginUser]
+  void loginUserSuccess(ZendeskUser user);
 
   void loginUserError(ZendeskError error);
 
-  /// complete [ZendeskApi.logoutUser]
+  /// complete [ZendeskApi.startLogoutUser]
   void logoutUserSuccess();
 
   void logoutUserError(ZendeskError error);
 
-  /// complete [ZendeskApi.getUnreadMessageCount]
-  void getUnreadMessageCountSuccess();
+  /// complete [ZendeskApi.startGetUnreadMessageCount]
+  void getUnreadMessageCountSuccess(int count);
 
   void getUnreadMessageCountError(ZendeskError error);
 
   static void setup(ZendeskCallbacks? api, {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.initializeSuccess', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.initializeSuccess', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
@@ -457,18 +488,18 @@ abstract class ZendeskCallbacks {
     }
     {
       final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.initializeError', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.initializeError', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.initializeError was null.');
+          'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.initializeError was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ZendeskError? arg_error = (args[0] as ZendeskError?);
           assert(arg_error != null,
-              'Argument for dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.initializeError was null, expected non-null ZendeskError.');
+              'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.initializeError was null, expected non-null ZendeskError.');
           try {
             api.initializeError(arg_error!);
             return wrapResponse(empty: true);
@@ -482,14 +513,20 @@ abstract class ZendeskCallbacks {
     }
     {
       final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.loginUserSuccess', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.loginUserSuccess', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.loginUserSuccess was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ZendeskUser? arg_user = (args[0] as ZendeskUser?);
+          assert(arg_user != null,
+              'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.loginUserSuccess was null, expected non-null ZendeskUser.');
           try {
-            api.loginUserSuccess();
+            api.loginUserSuccess(arg_user!);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
@@ -501,18 +538,18 @@ abstract class ZendeskCallbacks {
     }
     {
       final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.loginUserError', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.loginUserError', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.loginUserError was null.');
+          'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.loginUserError was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ZendeskError? arg_error = (args[0] as ZendeskError?);
           assert(arg_error != null,
-              'Argument for dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.loginUserError was null, expected non-null ZendeskError.');
+              'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.loginUserError was null, expected non-null ZendeskError.');
           try {
             api.loginUserError(arg_error!);
             return wrapResponse(empty: true);
@@ -526,7 +563,7 @@ abstract class ZendeskCallbacks {
     }
     {
       final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.logoutUserSuccess', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.logoutUserSuccess', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
@@ -545,18 +582,18 @@ abstract class ZendeskCallbacks {
     }
     {
       final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.logoutUserError', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.logoutUserError', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.logoutUserError was null.');
+          'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.logoutUserError was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ZendeskError? arg_error = (args[0] as ZendeskError?);
           assert(arg_error != null,
-              'Argument for dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.logoutUserError was null, expected non-null ZendeskError.');
+              'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.logoutUserError was null, expected non-null ZendeskError.');
           try {
             api.logoutUserError(arg_error!);
             return wrapResponse(empty: true);
@@ -570,14 +607,20 @@ abstract class ZendeskCallbacks {
     }
     {
       final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.getUnreadMessageCountSuccess', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountSuccess', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountSuccess was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final int? arg_count = (args[0] as int?);
+          assert(arg_count != null,
+              'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountSuccess was null, expected non-null int.');
           try {
-            api.getUnreadMessageCountSuccess();
+            api.getUnreadMessageCountSuccess(arg_count!);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
@@ -589,18 +632,18 @@ abstract class ZendeskCallbacks {
     }
     {
       final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.getUnreadMessageCountError', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountError', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.getUnreadMessageCountError was null.');
+          'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountError was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ZendeskError? arg_error = (args[0] as ZendeskError?);
           assert(arg_error != null,
-              'Argument for dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.getUnreadMessageCountError was null, expected non-null ZendeskError.');
+              'Argument for dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountError was null, expected non-null ZendeskError.');
           try {
             api.getUnreadMessageCountError(arg_error!);
             return wrapResponse(empty: true);

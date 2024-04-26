@@ -134,6 +134,28 @@ struct ZendeskError {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct ZendeskUser {
+  var id: String? = nil
+  var externalId: String? = nil
+
+  static func fromList(_ list: [Any?]) -> ZendeskUser? {
+    let id: String? = nilOrValue(list[0])
+    let externalId: String? = nilOrValue(list[1])
+
+    return ZendeskUser(
+      id: id,
+      externalId: externalId
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      id,
+      externalId,
+    ]
+  }
+}
+
 private class ZendeskApiCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -179,10 +201,10 @@ protocol ZendeskApi {
   ///
   ///
   ///
-  func initialize(channelKey: String) throws
-  func loginUser(jwt: String) throws
-  func logoutUser() throws
-  func getUnreadMessageCount() throws
+  func startInitialize(channelKey: String) throws
+  func startLoginUser(jwt: String) throws
+  func startLogoutUser() throws
+  func startGetUnreadMessageCount() throws
   /// this goes pretty much only one way - return an error or don't
   func invalidate(completion: @escaping (Result<ZendeskError?, Error>) -> Void)
   func show(completion: @escaping (Result<ZendeskError?, Error>) -> Void)
@@ -205,64 +227,64 @@ class ZendeskApiSetup {
     ///
     ///
     ///
-    let initializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.initialize", binaryMessenger: binaryMessenger, codec: codec)
+    let startInitializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startInitialize", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      initializeChannel.setMessageHandler { message, reply in
+      startInitializeChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let channelKeyArg = args[0] as! String
         do {
-          try api.initialize(channelKey: channelKeyArg)
+          try api.startInitialize(channelKey: channelKeyArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      initializeChannel.setMessageHandler(nil)
+      startInitializeChannel.setMessageHandler(nil)
     }
-    let loginUserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.loginUser", binaryMessenger: binaryMessenger, codec: codec)
+    let startLoginUserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startLoginUser", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      loginUserChannel.setMessageHandler { message, reply in
+      startLoginUserChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let jwtArg = args[0] as! String
         do {
-          try api.loginUser(jwt: jwtArg)
+          try api.startLoginUser(jwt: jwtArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      loginUserChannel.setMessageHandler(nil)
+      startLoginUserChannel.setMessageHandler(nil)
     }
-    let logoutUserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.logoutUser", binaryMessenger: binaryMessenger, codec: codec)
+    let startLogoutUserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startLogoutUser", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      logoutUserChannel.setMessageHandler { _, reply in
+      startLogoutUserChannel.setMessageHandler { _, reply in
         do {
-          try api.logoutUser()
+          try api.startLogoutUser()
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      logoutUserChannel.setMessageHandler(nil)
+      startLogoutUserChannel.setMessageHandler(nil)
     }
-    let getUnreadMessageCountChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.getUnreadMessageCount", binaryMessenger: binaryMessenger, codec: codec)
+    let startGetUnreadMessageCountChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startGetUnreadMessageCount", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getUnreadMessageCountChannel.setMessageHandler { _, reply in
+      startGetUnreadMessageCountChannel.setMessageHandler { _, reply in
         do {
-          try api.getUnreadMessageCount()
+          try api.startGetUnreadMessageCount()
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      getUnreadMessageCountChannel.setMessageHandler(nil)
+      startGetUnreadMessageCountChannel.setMessageHandler(nil)
     }
     /// this goes pretty much only one way - return an error or don't
-    let invalidateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.invalidate", binaryMessenger: binaryMessenger, codec: codec)
+    let invalidateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.invalidate", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       invalidateChannel.setMessageHandler { _, reply in
         api.invalidate { result in
@@ -277,7 +299,7 @@ class ZendeskApiSetup {
     } else {
       invalidateChannel.setMessageHandler(nil)
     }
-    let showChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.show", binaryMessenger: binaryMessenger, codec: codec)
+    let showChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.show", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       showChannel.setMessageHandler { _, reply in
         api.show { result in
@@ -292,7 +314,7 @@ class ZendeskApiSetup {
     } else {
       showChannel.setMessageHandler(nil)
     }
-    let setConversationTagsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.setConversationTags", binaryMessenger: binaryMessenger, codec: codec)
+    let setConversationTagsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.setConversationTags", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       setConversationTagsChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -309,7 +331,7 @@ class ZendeskApiSetup {
     } else {
       setConversationTagsChannel.setMessageHandler(nil)
     }
-    let clearConversationTagsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.clearConversationTags", binaryMessenger: binaryMessenger, codec: codec)
+    let clearConversationTagsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.clearConversationTags", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       clearConversationTagsChannel.setMessageHandler { _, reply in
         api.clearConversationTags { result in
@@ -324,7 +346,7 @@ class ZendeskApiSetup {
     } else {
       clearConversationTagsChannel.setMessageHandler(nil)
     }
-    let setConversationFieldsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.setConversationFields", binaryMessenger: binaryMessenger, codec: codec)
+    let setConversationFieldsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.setConversationFields", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       setConversationFieldsChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -341,7 +363,7 @@ class ZendeskApiSetup {
     } else {
       setConversationFieldsChannel.setMessageHandler(nil)
     }
-    let clearConversationFieldsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.wtzendesk.api.ZendeskApi.clearConversationFields", binaryMessenger: binaryMessenger, codec: codec)
+    let clearConversationFieldsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.clearConversationFields", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       clearConversationFieldsChannel.setMessageHandler { _, reply in
         api.clearConversationFields { result in
@@ -363,6 +385,8 @@ private class ZendeskCallbacksCodecReader: FlutterStandardReader {
     switch type {
     case 128:
       return ZendeskError.fromList(self.readValue() as! [Any?])
+    case 129:
+      return ZendeskUser.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -373,6 +397,9 @@ private class ZendeskCallbacksCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
     if let value = value as? ZendeskError {
       super.writeByte(128)
+      super.writeValue(value.toList())
+    } else if let value = value as? ZendeskUser {
+      super.writeByte(129)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -396,17 +423,17 @@ class ZendeskCallbacksCodec: FlutterStandardMessageCodec {
 
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol ZendeskCallbacksProtocol {
-  /// complete [ZendeskApi.initialize]
+  /// complete [ZendeskApi.startInitialize]
   func initializeSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void)
   func initializeError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void)
-  /// complete [ZendeskApi.loginUser]
-  func loginUserSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void)
+  /// complete [ZendeskApi.startLoginUser]
+  func loginUserSuccess(user userArg: ZendeskUser, completion: @escaping (Result<Void, FlutterError>) -> Void)
   func loginUserError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void)
-  /// complete [ZendeskApi.logoutUser]
+  /// complete [ZendeskApi.startLogoutUser]
   func logoutUserSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void)
   func logoutUserError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void)
-  /// complete [ZendeskApi.getUnreadMessageCount]
-  func getUnreadMessageCountSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void)
+  /// complete [ZendeskApi.startGetUnreadMessageCount]
+  func getUnreadMessageCountSuccess(count countArg: Int64, completion: @escaping (Result<Void, FlutterError>) -> Void)
   func getUnreadMessageCountError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void)
 }
 class ZendeskCallbacks: ZendeskCallbacksProtocol {
@@ -417,9 +444,9 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
   var codec: FlutterStandardMessageCodec {
     return ZendeskCallbacksCodec.shared
   }
-  /// complete [ZendeskApi.initialize]
+  /// complete [ZendeskApi.startInitialize]
   func initializeSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.initializeSuccess"
+    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.initializeSuccess"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage(nil) { response in
       guard let listResponse = response as? [Any?] else {
@@ -437,7 +464,7 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
     }
   }
   func initializeError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.initializeError"
+    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.initializeError"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([errorArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
@@ -454,11 +481,11 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
       }
     }
   }
-  /// complete [ZendeskApi.loginUser]
-  func loginUserSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.loginUserSuccess"
+  /// complete [ZendeskApi.startLoginUser]
+  func loginUserSuccess(user userArg: ZendeskUser, completion: @escaping (Result<Void, FlutterError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.loginUserSuccess"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage(nil) { response in
+    channel.sendMessage([userArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
         completion(.failure(createConnectionError(withChannelName: channelName)))
         return
@@ -474,7 +501,7 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
     }
   }
   func loginUserError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.loginUserError"
+    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.loginUserError"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([errorArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
@@ -491,9 +518,9 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
       }
     }
   }
-  /// complete [ZendeskApi.logoutUser]
+  /// complete [ZendeskApi.startLogoutUser]
   func logoutUserSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.logoutUserSuccess"
+    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.logoutUserSuccess"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage(nil) { response in
       guard let listResponse = response as? [Any?] else {
@@ -511,7 +538,7 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
     }
   }
   func logoutUserError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.logoutUserError"
+    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.logoutUserError"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([errorArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
@@ -528,11 +555,11 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
       }
     }
   }
-  /// complete [ZendeskApi.getUnreadMessageCount]
-  func getUnreadMessageCountSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.getUnreadMessageCountSuccess"
+  /// complete [ZendeskApi.startGetUnreadMessageCount]
+  func getUnreadMessageCountSuccess(count countArg: Int64, completion: @escaping (Result<Void, FlutterError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountSuccess"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage(nil) { response in
+    channel.sendMessage([countArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
         completion(.failure(createConnectionError(withChannelName: channelName)))
         return
@@ -548,7 +575,7 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
     }
   }
   func getUnreadMessageCountError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.wtzendesk.api.ZendeskCallbacks.getUnreadMessageCountError"
+    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountError"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([errorArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
