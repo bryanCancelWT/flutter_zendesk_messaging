@@ -3,6 +3,10 @@ description: Zendesk-Messaging for Flutter developer
 version: 2.9.0
 homepage: https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging
 
+# TO RE-RUN PIGEON
+# https://blog.codemagic.io/working-with-native-elements/
+# flutter pub run pigeon --input pigeons/zendesk_api.dart 
+
 topics:
   - zendesk
   - custom
@@ -26,6 +30,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
+
+  # for generating communication channels between flutter and iOS/Android
+  pigeon: ^17.2.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
