@@ -212,6 +212,9 @@ protocol ZendeskApi {
   func clearConversationTags(completion: @escaping (Result<ZendeskError?, Error>) -> Void)
   func setConversationFields(fields: [String: String], completion: @escaping (Result<ZendeskError?, Error>) -> Void)
   func clearConversationFields(completion: @escaping (Result<ZendeskError?, Error>) -> Void)
+  /// easy
+  func isInitialized(completion: @escaping (Result<Bool, Error>) -> Void)
+  func isLoggedIn(completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -377,6 +380,37 @@ class ZendeskApiSetup {
       }
     } else {
       clearConversationFieldsChannel.setMessageHandler(nil)
+    }
+    /// easy
+    let isInitializedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isInitialized", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      isInitializedChannel.setMessageHandler { _, reply in
+        api.isInitialized { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      isInitializedChannel.setMessageHandler(nil)
+    }
+    let isLoggedInChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isLoggedIn", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      isLoggedInChannel.setMessageHandler { _, reply in
+        api.isLoggedIn { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      isLoggedInChannel.setMessageHandler(nil)
     }
   }
 }

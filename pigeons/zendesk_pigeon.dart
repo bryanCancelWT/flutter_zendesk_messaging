@@ -133,6 +133,12 @@ abstract class ZendeskApi {
   ZendeskError? setConversationFields(Map<String, String> fields);
   @async
   ZendeskError? clearConversationFields();
+
+  /// easy
+  @async
+  bool isInitialized();
+  @async
+  bool isLoggedIn();
 }
 
 @FlutterApi()

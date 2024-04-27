@@ -211,6 +211,9 @@ interface ZendeskApi {
   fun clearConversationTags(callback: (Result<ZendeskError?>) -> Unit)
   fun setConversationFields(fields: Map<String, String>, callback: (Result<ZendeskError?>) -> Unit)
   fun clearConversationFields(callback: (Result<ZendeskError?>) -> Unit)
+  /** easy */
+  fun isInitialized(callback: (Result<Boolean>) -> Unit)
+  fun isLoggedIn(callback: (Result<Boolean>) -> Unit)
 
   companion object {
     /** The codec used by ZendeskApi. */
@@ -391,6 +394,42 @@ interface ZendeskApi {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.clearConversationFields() { result: Result<ZendeskError?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isInitialized", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.isInitialized() { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isLoggedIn", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.isLoggedIn() { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

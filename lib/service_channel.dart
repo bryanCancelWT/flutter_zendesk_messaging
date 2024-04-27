@@ -1,10 +1,41 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:multiple_result/multiple_result.dart';
+import 'package:zendesk_messaging/failure.dart';
+import 'package:zendesk_messaging/service.dart';
+import 'package:zendesk_messaging/zendesk_pigeon.dart';
 
-/// Message type emitted by native platforms
+extension ZendeskErrorExtn on ZendeskError {
+  static ZendeskError fromArgs(Map? args) {
+    return ZendeskError(
+      messageAndroid: args?["messageAndroid"],
+      toStringAndroid: args?["toStringAndroid"],
+      codeIOS: args?["codeIOS"],
+      domainIOS: args?["domainIOS"],
+
+      /// TODO
+      userInfoIOS: null,
+      localizedDescriptionIOS: args?["localizedDescriptionIOS"],
+
+      /// TODO
+      localizedRecoveryOptionsIOS: null,
+      localizedRecoverySuggestionIOS: args?["localizedRecoverySuggestionIOS"],
+      localizedFailureReasonIOS: args?["localizedFailureReasonIOS"],
+
+      /// ! null since anything here is an OS error
+      nonOSError: null,
+    );
+  }
+}
+
+class ZendeskMessagingObserver {
+  ZendeskMessagingObserver(this.removeOnCall, this.func);
+  final bool removeOnCall;
+  final Function(Map? args) func;
+}
+
 enum ZendeskMessagingMessageType {
   initializeSuccess,
   initializeFailure,
@@ -14,236 +45,46 @@ enum ZendeskMessagingMessageType {
   logoutFailure,
 }
 
-/// Used by ZendeskMessaging to attach custom async observers
-class ZendeskMessagingObserver {
-  ZendeskMessagingObserver(this.removeOnCall, this.func);
-  final bool removeOnCall;
-  final Function(Map? args) func;
-}
-
-class ZendeskLoginResponse {
-  ZendeskLoginResponse(this.id, this.externalId);
-  final String? id;
-  final String? externalId;
-}
-
-class ZendeskMessaging {
+class ZendeskServiceChannel implements ZendeskService {
   static const MethodChannel _channel = MethodChannel('zendesk_messaging');
-  static const channelMethodToMessageType = {
-    'initialize_success': ZendeskMessagingMessageType.initializeSuccess,
-    'initialize_failure': ZendeskMessagingMessageType.initializeFailure,
-    'login_success': ZendeskMessagingMessageType.loginSuccess,
-    'login_failure': ZendeskMessagingMessageType.loginFailure,
-    'logout_success': ZendeskMessagingMessageType.logoutSuccess,
-    'logout_failure': ZendeskMessagingMessageType.logoutFailure,
-  };
-
-  /// Global handler, all channel method calls will trigger this observer
-  static Function(ZendeskMessagingMessageType type, Map? arguments)? _handler;
 
   /// Allow end-user to use local observer when calling some methods
   static final Map<ZendeskMessagingMessageType, ZendeskMessagingObserver>
       _observers = {};
 
-  /// Attach a global observer for incoming messages
-  static void setMessageHandler(
-    Function(ZendeskMessagingMessageType type, Map? arguments)? handler,
-  ) {
-    _handler = handler;
+  /// Add an observer for a specific type
+  static _setObserver(
+    ZendeskMessagingMessageType type,
+    Function(Map? args)? func, {
+    bool removeOnCall = true,
+  }) {
+    if (func == null) {
+      _observers.remove(type);
+    } else {
+      _observers[type] = ZendeskMessagingObserver(removeOnCall, func);
+    }
   }
 
-  /// Initialize the Zendesk SDK for Android and iOS
   ///
-  /// @param  androidChannelKey  The Android SDK key generated from Zendesk dashboard
-  /// @param  iosChannelKey      The iOS SDK key generated from the Zendesk dashboard
-  static Future<void> initialize({
-    required String androidChannelKey,
-    required String iosChannelKey,
-  }) async {
-    if (androidChannelKey.isEmpty || iosChannelKey.isEmpty) {
-      debugPrint('ZendeskMessaging - initialize - keys can not be empty');
-      return;
-    }
-
-    try {
-      _channel.setMethodCallHandler(
-        _onMethodCall,
-      ); // start observing channel messages
-      await _channel.invokeMethod('initialize', {
-        'channelKey': Platform.isAndroid ? androidChannelKey : iosChannelKey,
-      });
-      return;
-    } catch (e) {
-      debugPrint('ZendeskMessaging - initialize - Error: $e}');
-      return;
-    }
-  }
-
-  /// Invalidates the current instance of ZendeskMessaging.
-  /// After calling this method you will have to call ZendeskMessaging.initialize again if you would like to use ZendeskMessaging.
-  static Future<void> invalidate() async {
-    try {
-      await _channel.invokeMethod('invalidate');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - invalidate - Error: $e}');
-    }
-  }
-
-  /// Start the Zendesk Messaging UI
-  static Future<void> show() async {
-    try {
-      await _channel.invokeMethod('show');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - show - Error: $e}');
-    }
-  }
-
-  /// Add a list of tags to a support ticket
   ///
-  /// Conversation tags are not immediately associated with a conversation when this method is called.
-  /// It will only be applied to a conversation when end users either start a new
-  /// conversation or send a new message in an existing conversation.
   ///
-  /// For example, to apply "promo_code" and "discount" tags to a conversation about an order, then you would call:
-  /// `ZendeskMessaging.setConversationTags(["promo_code","discount"])`
-  static Future<void> setConversationTags(List<String> tags) async {
-    try {
-      await _channel.invokeMethod('setConversationTags', {'tags': tags});
-    } catch (e) {
-      debugPrint('ZendeskMessaging - setConversationTags - Error: $e}');
-    }
-  }
-
-  /// Remove all the tags on the current support ticket
+  /// Initialize Service
   ///
-  static Future<void> clearConversationTags() async {
-    try {
-      await _channel.invokeMethod('clearConversationTags');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - clearConversationTags - Error: $e}');
-    }
-  }
-
-  /// Authenticate the current session with a JWT
   ///
-  /// @param  jwt       Required by the SDK - You must generate it from your backend
-  /// @param  onSuccess Optional - If you need to be notified about the login success
-  /// @param  onFailure Optional - If you need to be notified about the login failure
-  static Future<void> loginUserCallbacks({
-    required String jwt,
-    Function(String? id, String? externalId)? onSuccess,
-    Function()? onFailure,
-  }) async {
-    if (jwt.isEmpty) {
-      debugPrint('ZendeskMessaging - loginUser - jwt can not be empty');
-      return;
-    }
-
-    try {
-      _setObserver(
-        ZendeskMessagingMessageType.loginSuccess,
-        onSuccess != null
-            ? (Map? args) {
-                final id = args?['id'] ?? '';
-                final externalId = args?['externalId'] ?? '';
-                onSuccess(id, externalId);
-              }
-            : null,
-      );
-      _setObserver(
-        ZendeskMessagingMessageType.loginFailure,
-        onFailure != null ? (Map? args) => onFailure() : null,
-      );
-
-      await _channel.invokeMethod('loginUser', {'jwt': jwt});
-    } catch (e) {
-      debugPrint('ZendeskMessaging - loginUser - Error: $e}');
-    }
-  }
-
-  /// Helper function to login waiting for future to complete
   ///
-  /// @return   The zendesk userId
-  static Future<ZendeskLoginResponse> loginUser({required String jwt}) async {
-    final completer = Completer<ZendeskLoginResponse>();
-    await loginUserCallbacks(
-      jwt: jwt,
-      onSuccess: (id, externalId) =>
-          completer.complete(ZendeskLoginResponse(id, externalId)),
-      onFailure: () =>
-          completer.completeError(Exception('Zendesk::loginUser failed')),
-    );
-    return completer.future;
-  }
 
-  /// Logout the currently authenticated user
-  ///
-  /// @param  onSuccess Optional - If you need to be notified about the logout success
-  /// @param  onFailure Optional - If you need to be notified about the logout failure
-  static Future<void> logoutUserCallbacks({
-    Function()? onSuccess,
-    Function()? onFailure,
-  }) async {
+  /// initialization of the service itself
+  bool _hasInitialized = false;
+
+  @override
+  Future<Failure?> initializeService() async {
+    if (_hasInitialized) return null;
     try {
-      _setObserver(
-        ZendeskMessagingMessageType.logoutSuccess,
-        onSuccess != null ? (Map? args) => onSuccess() : null,
-      );
-      _setObserver(
-        ZendeskMessagingMessageType.logoutFailure,
-        onFailure != null ? (Map? args) => onFailure() : null,
-      );
-
-      await _channel.invokeMethod('logoutUser');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - logoutUser - Error: $e}');
-    }
-  }
-
-  /// Helper function to logout waiting for future to complete
-  static Future<void> logoutUser() async {
-    final completer = Completer<void>();
-    await logoutUserCallbacks(
-      onSuccess: completer.complete,
-      onFailure: () =>
-          completer.completeError(Exception('Zendesk::logoutUser failed')),
-    );
-    return completer.future;
-  }
-
-  /// Retrieve unread messages count from the Zendesk SDK
-  static Future<int> getUnreadMessageCount() async {
-    try {
-      return await _channel.invokeMethod(
-        'getUnreadMessageCount',
-      );
-    } catch (e) {
-      debugPrint('ZendeskMessaging - count - Error: $e}');
-      return 0;
-    }
-  }
-
-  ///  Check if the Zendesk SDK for Android and iOS is already initialized
-  static Future<bool> isInitialized() async {
-    try {
-      return await _channel.invokeMethod(
-        'isInitialized',
-      );
-    } catch (e) {
-      debugPrint('ZendeskMessaging - isInitialized - Error: $e}');
-      return false;
-    }
-  }
-
-  ///  Check if the user is already logged in
-  static Future<bool> isLoggedIn() async {
-    try {
-      return await _channel.invokeMethod(
-        'isLoggedIn',
-      );
-    } catch (e) {
-      debugPrint('ZendeskMessaging - isLoggedIn - Error: $e}');
-      return false;
+      _channel.setMethodCallHandler(_onMethodCall);
+      _hasInitialized = true;
+      return null;
+    } catch (e, s) {
+      return Failure(e, s);
     }
   }
 
@@ -269,52 +110,227 @@ class ZendeskMessaging {
     }
   }
 
-  /// Add an observer for a specific type
-  static _setObserver(
-    ZendeskMessagingMessageType type,
-    Function(Map? args)? func, {
-    bool removeOnCall = true,
-  }) {
-    if (func == null) {
-      _observers.remove(type);
-    } else {
-      _observers[type] = ZendeskMessagingObserver(removeOnCall, func);
+  static const channelMethodToMessageType = {
+    'initialize_success': ZendeskMessagingMessageType.initializeSuccess,
+    'initialize_failure': ZendeskMessagingMessageType.initializeFailure,
+    'login_success': ZendeskMessagingMessageType.loginSuccess,
+    'login_failure': ZendeskMessagingMessageType.loginFailure,
+    'logout_success': ZendeskMessagingMessageType.logoutSuccess,
+    'logout_failure': ZendeskMessagingMessageType.logoutFailure,
+  };
+
+  /// Global handler, all channel method calls will trigger this observer
+  static Function(ZendeskMessagingMessageType type, Map? arguments)? _handler;
+
+  ///
+  ///
+  ///
+  /// Initialize Zendesk
+  ///
+  ///
+  ///
+
+  @override
+  Future<Failure?> initializeZendesk(String channelKey) async {
+    try {
+      await _channel.invokeMethod('initialize', {'channelKey': channelKey});
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+
+    /// TODO: at some point we really should get errors from native code here
+    return null;
+  }
+
+  ///
+  ///
+  ///
+  /// Login User
+  ///
+  ///
+  ///
+
+  @override
+  Future<Result<ZendeskUser, Failure>> loginUser(String jwt) async {
+    Completer<Result<ZendeskUser, Failure>> completer =
+        Completer<Result<ZendeskUser, Failure>>();
+
+    try {
+      _setObserver(ZendeskMessagingMessageType.loginSuccess, (Map? args) {
+        completer.complete(Result<ZendeskUser, Failure>.success(
+          ZendeskUser(id: args?['id'], externalId: args?['externalId']),
+        ));
+      });
+
+      _setObserver(ZendeskMessagingMessageType.loginFailure, (Map? args) {
+        completer.complete(Result<ZendeskUser, Failure>.error(
+          Failure(ZendeskErrorExtn.fromArgs(args)),
+        ));
+      });
+
+      await _channel.invokeMethod('loginUser', {'jwt': jwt});
+    } on PlatformException catch (e, s) {
+      return Result<ZendeskUser, Failure>.error(Failure(e, s));
+    }
+
+    return await completer.future;
+  }
+
+  ///
+  ///
+  ///
+  /// Logout User
+  ///
+  ///
+  ///
+
+  @override
+  Future<Failure?> logoutUser() async {
+    Completer<ZendeskError?> completer = Completer<ZendeskError?>();
+
+    try {
+      _setObserver(ZendeskMessagingMessageType.logoutSuccess, (Map? args) {
+        completer.complete(null);
+      });
+
+      _setObserver(ZendeskMessagingMessageType.logoutFailure, (Map? args) {
+        completer.complete(ZendeskErrorExtn.fromArgs(args));
+      });
+
+      await _channel.invokeMethod('logoutUser');
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+
+    ZendeskError? result = await completer.future;
+    return result != null ? Failure(result) : null;
+  }
+
+  ///
+  ///
+  ///
+  /// Get Unread Message Count
+  ///
+  ///
+  ///
+
+  @override
+  Future<Result<int, Failure>> getUnreadMessageCount() async {
+    try {
+      int result = await _channel.invokeMethod('getUnreadMessageCount');
+      return Result<int, Failure>.success(result);
+    } on PlatformException catch (e, s) {
+      debugPrint('ZendeskMessaging - count - Error: $e}');
+      return Result<int, Failure>.error(Failure(e, s));
     }
   }
 
-  /// Set values for conversation fields in the SDK to add contextual data about the conversation.
   ///
-  /// This method allows setting custom field values which are used to add additional context to a conversation in Zendesk.
-  /// Conversation fields must be created as custom ticket fields in the Zendesk Admin Center and configured to be settable by end users.
   ///
-  /// Note: Conversation fields are not immediately associated with a conversation when this method is called.
-  /// The fields will only be applied to a conversation when end users start a new conversation or send a new message in an existing conversation.
   ///
-  /// System ticket fields, such as the Priority field, are not supported.
+  /// No Completers Required
   ///
-  /// The values set by this method are persisted in the SDK and will apply to all conversations going forward.
-  /// To remove fields, use the `ClearConversationFields` API.
   ///
-  /// Example:
-  /// To set custom fields "user_type" and "purchase_amount" for a conversation, use the following call:
-  /// ```
-  /// setConversationFields({"user_type": "new_user", "purchase_amount": "39.99"});
-  /// ```
-  static Future<void> setConversationFields(Map<String, String> fields) async {
+  ///
+
+  @override
+  Future<Failure?> invalidate() async {
     try {
-      await _channel.invokeMethod('setConversationFields', {'fields': fields});
-    } catch (e) {
-      debugPrint('ZendeskMessaging - setConversationFields - Error: $e}');
+      ZendeskError? result = await _channel.invokeMethod('invalidate');
+      return result != null ? Failure(result) : null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
     }
   }
 
-  /// Remove all the fields on the current support ticket
-  ///
-  static Future<void> clearConversationFields() async {
+  @override
+  Future<Failure?> show() async {
     try {
-      await _channel.invokeMethod('clearConversationFields');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - clearConversationFields - Error: $e}');
+      ZendeskError? result = await _channel.invokeMethod('show');
+      return result != null ? Failure(result) : null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> setConversationTags(List<String> tags) async {
+    try {
+      ZendeskError? result = await _channel.invokeMethod(
+        'setConversationTags',
+        {'tags': tags},
+      );
+      return result != null ? Failure(result) : null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> clearConversationTags() async {
+    try {
+      ZendeskError? result = await _channel.invokeMethod(
+        'clearConversationTags',
+      );
+      return result != null ? Failure(result) : null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> setConversationFields(Map<String, String> fields) async {
+    try {
+      ZendeskError? result = await _channel.invokeMethod(
+        'setConversationFields',
+        {'fields': fields},
+      );
+      return result != null ? Failure(result) : null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> clearConversationFields() async {
+    try {
+      ZendeskError? result = await _channel.invokeMethod(
+        'clearConversationFields',
+      );
+      return result != null ? Failure(result) : null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  ///
+  ///
+  ///
+  /// Other
+  /// - can only fail while being called from flutter
+  ///
+  ///
+  ///
+
+  @override
+  Future<Result<bool, Failure>> isInitialized() async {
+    try {
+      return Result<bool, Failure>.success(await _channel.invokeMethod(
+        'isInitialized',
+      ));
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
+    }
+  }
+
+  @override
+  Future<Result<bool, Failure>> isLoggedIn() async {
+    try {
+      return Result<bool, Failure>.success(await _channel.invokeMethod(
+        'isLoggedIn',
+      ));
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
     }
   }
 }

@@ -2,23 +2,29 @@ import 'package:multiple_result/multiple_result.dart';
 import 'package:zendesk_messaging/failure.dart';
 import 'package:zendesk_messaging/zendesk_pigeon.dart';
 
-abstract class ZendeskApiService {
-  /// seperate
+abstract class ZendeskService {
+  /// Seperate
   Future<Failure?> initializeService();
 
-  /// use completers
+  /// Completers
   Future<Failure?> initializeZendesk(String channelKey);
   Future<Result<ZendeskUser, Failure>> loginUser(String jwt);
   Future<Failure?> logoutUser();
   Future<Result<int, Failure>> getUnreadMessageCount();
 
-  /// use async function
+  /// No Completers
+  /// - can only return a failure from native
   Future<Failure?> invalidate();
   Future<Failure?> show();
   Future<Failure?> setConversationTags(List<String> tags);
   Future<Failure?> clearConversationTags();
   Future<Failure?> setConversationFields(Map<String, String> fields);
   Future<Failure?> clearConversationFields();
+
+  /// Other
+  /// - can only fail while being called from flutter
+  Future<Result<bool, Failure>> isInitialized();
+  Future<Result<bool, Failure>> isLoggedIn();
 }
 
 class WTZendeskMessaging {
@@ -50,38 +56,6 @@ class WTZendeskMessaging {
     WTEither<FingerPrintError, FingerPrintSuccess> fingerprintResult =
         await socureApiService!.fingerprint();
 
-    if (fingerprintResult.isError == false) {
-      Failure? socureStorageError = await SecureStorage.setDeviceSessionID(
-        fingerprintResult.data.deviceSessionID,
-      );
-
-      WTToast.handleInvokeMethodPlatformException(
-        failure: socureStorageError,
-        title: "Error Storing Session ID",
-        doNotDisplay: willIgnoreFailure,
-      );
-
-      return FingerPrintErrorExtn.fromFingerprintErrorType(
-        FingerprintErrorType.couldntStoreDeviceSessionID,
-      );
-
-      return null;
-    }
-
-    FingerPrintError fingerPrintError = fingerprintResult.error;
-
-    WTToast.show(
-      doNotDisplay: willIgnoreFailure,
-      failure: Failure(fingerPrintError),
-      title: "Error Fingerprinting Device",
-      subtitle: fingerPrintError.errorType.message,
-
-      /// TODO: what in the canolis was I talking about here...
-      /// can't use same as the page that calls this function
-      /// - because we aren't awaiting this
-      nonGenericProductivelyInformsUser: false,
-    );
-
     return fingerPrintError;
   }
 
@@ -110,17 +84,6 @@ class WTZendeskMessaging {
       omitLocation: locationIs == LocationIs.notNeeded,
     );
 
-    return WTToast.handleInvokeMethodPlatformException(
-      failure: configFailure,
-      title: "Error Configuring Security Check",
-    );
-
-    FingerPrintError? fingerPrintError = await WTSocure._fingerprint(
-      context,
-      locationIs: locationIs,
-      willIgnoreFailure: willIgnoreFingerprintFailure,
-    );
-
     if (fingerPrintError != null) return Failure(fingerPrintError);
 
     return null;
@@ -130,12 +93,6 @@ class WTZendeskMessaging {
   static Future<WTEither<DocVError, DocVSuccess>> docV() async {
     WTEither<DocVError, DocVSuccess> docVResult =
         await socureApiService!.docV();
-    if (docVResult.hasError) {
-      WTToast.handleInvokeMethodPlatformException(
-        failure: Failure(docVResult.error),
-        title: docVResult.error.errorMessage,
-      );
-    }
     return docVResult;
   }
 }
