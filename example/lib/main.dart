@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zendesk_messaging/zendesk_messaging.dart';
+import 'package:zendesk_messaging/service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -70,7 +70,8 @@ class _MyAppState extends State<MyApp> {
                   ),
                   ElevatedButton(
                     onPressed: () => _getUnreadMessageCount(),
-                    child: Text('Get unread message count - $unreadMessageCount'),
+                    child:
+                        Text('Get unread message count - $unreadMessageCount'),
                   ),
                 ],
                 ElevatedButton(
@@ -115,17 +116,7 @@ class _MyAppState extends State<MyApp> {
 
   void _login() {
     // You can attach local observer when calling some methods to be notified when ready
-    ZendeskMessaging.loginUserCallbacks(
-      jwt: "my_jwt",
-      onSuccess: (id, externalId) => setState(() {
-        channelMessages.add("Login observer - SUCCESS: $id, $externalId");
-        isLogin = true;
-      }),
-      onFailure: () => setState(() {
-        channelMessages.add("Login observer - FAILURE!");
-        isLogin = false;
-      }),
-    );
+    ZendeskMessaging.loginUser("my_jwt");
   }
 
   void _logout() {
@@ -134,26 +125,31 @@ class _MyAppState extends State<MyApp> {
       isLogin = false;
     });
   }
-    void _getUnreadMessageCount() async {
+
+  void _getUnreadMessageCount() async {
     final messageCount = await ZendeskMessaging.getUnreadMessageCount();
     if (mounted) {
       unreadMessageCount = messageCount;
       setState(() {});
     }
   }
+
   void _setTags() async {
     final tags = ['tag1', 'tag2', 'tag3'];
     await ZendeskMessaging.setConversationTags(tags);
   }
+
   void _clearTags() async {
     await ZendeskMessaging.clearConversationTags();
   }
-  void _checkUserLoggedIn()async {
-   final isLoggedIn = await ZendeskMessaging.isLoggedIn();
-   setState(() {
-     channelMessages.add('User is ${isLoggedIn?'':'not'} logged in');
-   });
+
+  void _checkUserLoggedIn() async {
+    final isLoggedIn = await ZendeskMessaging.isLoggedIn();
+    setState(() {
+      channelMessages.add('User is ${isLoggedIn ? '' : 'not'} logged in');
+    });
   }
+
   void _setFields() async {
     Map<String, String> fieldsMap = {};
 
@@ -162,9 +158,11 @@ class _MyAppState extends State<MyApp> {
 
     await ZendeskMessaging.setConversationFields(fieldsMap);
   }
+
   void _clearFields() async {
     await ZendeskMessaging.clearConversationFields();
   }
+
   void _show() {
     ZendeskMessaging.show();
   }

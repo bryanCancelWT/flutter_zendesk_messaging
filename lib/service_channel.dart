@@ -65,6 +65,13 @@ class ZendeskServiceChannel implements ZendeskService {
     }
   }
 
+  /// Attach a global observer for incoming messages
+  static void setMessageHandler(
+    Function(ZendeskMessagingMessageType type, Map? arguments)? handler,
+  ) {
+    _handler = handler;
+  }
+
   ///
   ///
   ///
