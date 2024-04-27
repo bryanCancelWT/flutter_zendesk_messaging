@@ -33,13 +33,13 @@ abstract class ZendeskService {
 
 class ZendeskMessaging {
   static ZendeskService? zendeskService;
-  static bool? useChannelNotPigeonGlobal;
 
   /// Attach a global observer for incoming messages
   static void setMessageHandler(
-    Function(ZendeskMessagingMessageType type, Map? arguments)? handler,
-  ) {
-    if (useChannelNotPigeonGlobal!) {
+    Function(ZendeskMessagingMessageType type, Map? arguments)? handler, {
+    bool useChannelNotPigeon = true,
+  }) {
+    if (useChannelNotPigeon) {
       ZendeskServiceChannel.setMessageHandler(handler);
     }
   }
@@ -50,10 +50,8 @@ class ZendeskMessaging {
     required String androidChannelKey,
     required String iosChannelKey,
   }) async {
-    useChannelNotPigeonGlobal = useChannelNotPigeon;
-    zendeskService = useChannelNotPigeonGlobal!
-        ? ZendeskServiceChannel()
-        : ZendeskServicePigeon();
+    zendeskService =
+        useChannelNotPigeon ? ZendeskServiceChannel() : ZendeskServicePigeon();
     Failure? failure = await zendeskService!.initializeService();
     if (failure != null) return failure;
     return await zendeskService!.initializeZendesk(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:multiple_result/multiple_result.dart';
+import 'package:zendesk_messaging/failure.dart';
 import 'package:zendesk_messaging/service.dart';
 
 void main() {
@@ -13,6 +15,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  static const bool useChannelNotPigeon = true;
   static const String androidChannelKey = "your android key";
   static const String iosChannelKey = "your iOS key";
 
@@ -25,11 +28,14 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     // Optional, observe all incoming messages
-    ZendeskMessaging.setMessageHandler((type, arguments) {
-      setState(() {
-        channelMessages.add("$type - args=$arguments");
-      });
-    });
+    ZendeskMessaging.setMessageHandler(
+      (type, arguments) {
+        setState(() {
+          channelMessages.add("$type - args=$arguments");
+        });
+      },
+      useChannelNotPigeon: useChannelNotPigeon,
+    );
   }
 
   @override
@@ -58,6 +64,7 @@ class _MyAppState extends State<MyApp> {
                 ),
                 ElevatedButton(
                   onPressed: () => ZendeskMessaging.initialize(
+                    useChannelNotPigeon: useChannelNotPigeon,
                     androidChannelKey: androidChannelKey,
                     iosChannelKey: iosChannelKey,
                   ),
@@ -127,10 +134,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _getUnreadMessageCount() async {
-    final messageCount = await ZendeskMessaging.getUnreadMessageCount();
+    Result<int, Failure> messageCount =
+        await ZendeskMessaging.getUnreadMessageCount();
     if (mounted) {
-      unreadMessageCount = messageCount;
-      setState(() {});
+      messageCount.when(
+        (success) {
+          setState(() {
+            unreadMessageCount = success;
+          });
+        },
+        (error) {},
+      );
     }
   }
 
@@ -144,10 +158,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _checkUserLoggedIn() async {
-    final isLoggedIn = await ZendeskMessaging.isLoggedIn();
-    setState(() {
-      channelMessages.add('User is ${isLoggedIn ? '' : 'not'} logged in');
-    });
+    Result<bool, Failure> isLoggedIn = await ZendeskMessaging.isLoggedIn();
+    if (mounted) {
+      isLoggedIn.when(
+        (success) {
+          setState(() {
+            channelMessages.add('User is ${success ? '' : 'not'} logged in');
+          });
+        },
+        (error) {},
+      );
+    }
   }
 
   void _setFields() async {

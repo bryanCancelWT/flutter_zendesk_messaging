@@ -19,6 +19,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  multiple_result: ^5.1.0
+
   zendesk_messaging:
     # When depending on this package from a real application you should use:
     #   zendesk_messaging: ^x.y.z
