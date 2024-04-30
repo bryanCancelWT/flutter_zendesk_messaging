@@ -27,7 +27,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val failedToLogout: String = "failedToLogout"
     }
     
-    fun _errorToMap(error: Any): Map<String, String> {
+    fun _errorToMap(error: Any?): Map<String, String> {
         return if (error is Throwable) {
             error.zendeskError
         } else {
@@ -55,13 +55,13 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             return
         }
 
-        if (plugin.activity == null) {
+        val activity = plugin.activity ?: run {
             channel.invokeMethod(initializeFailure, mapOf("nonOSError" to nullActivity))
             return
         }
-     
+
         Zendesk.initialize(
-            plugin.activity!!,
+            activity,
             channelKey,
             successCallback = { value ->
                 plugin.isInitialized = true
@@ -79,16 +79,14 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// 
     /// If Zendesk.initialize() is successful, you can use the code snippets below anywhere in your app to show the conversation screen.
     /// If Zendesk.initialize() is not successful, a stub implementation of the Zendesk class is returned that logs to the console.
-    fun show(): Map<String, Any?> {
+    fun show(): Map<String, Any?>? {
         if (plugin.isInitialized == false) {
             return mapOf("nonOSError" to notInitialized)
         }
 
-        if (plugin.activity == null) {
-            return mapOf("nonOSError" to nullActivity)
-        }
+        val activity = plugin.activity ?: return mapOf("nonOSError" to nullActivity)
 
-        Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
+        Zendesk.instance.messaging.showMessaging(activity, Intent.FLAG_ACTIVITY_NEW_TASK)
         return null
     }
 
@@ -147,19 +145,14 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#loginuser
     ///
     /// To authenticate a user call the loginUser API with your own JWT. You can create your own JWT following our Creating a JWT token section.
-    fun loginUser(jwt: String) {
-        if(plugin.isInitialized == false) {
+    fun loginUser(jwt: String?) {
+        if (plugin.isInitialized == false) {
             channel.invokeMethod(loginFailure, mapOf("nonOSError" to notInitialized))
             return
         }
 
         if (jwt.isNullOrEmpty()) {
             channel.invokeMethod(loginFailure, mapOf("nonOSError" to invalidParameter))
-            return
-        }
-
-        if (plugin.activity == null) {
-            channel.invokeMethod(loginFailure, mapOf("nonOSError" to nullActivity))
             return
         }
 
@@ -190,11 +183,6 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     fun logoutUser() {
         if(plugin.isInitialized == false) {
             channel.invokeMethod(logoutFailure, mapOf("nonOSError" to notInitialized))
-            return
-        }
-
-        if (plugin.activity == null) {
-            channel.invokeMethod(logoutFailure, mapOf("nonOSError" to nullActivity))
             return
         }
 

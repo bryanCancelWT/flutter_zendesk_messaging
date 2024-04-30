@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:zendesk_messaging/failure.dart';
 import 'package:zendesk_messaging/service.dart';
+import 'package:zendesk_messaging/zendesk_pigeon.dart';
 
 void main() {
   runApp(const MyApp());
@@ -69,6 +73,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                   child: const Text("Initialize"),
                 ),
+                /*
                 if (isLogin) ...[
                   ElevatedButton(
                     onPressed: () => ZendeskMessaging.show(),
@@ -88,6 +93,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _clearTags(),
                   child: const Text("Clear tags"),
                 ),
+                */
                 ElevatedButton(
                   onPressed: () => _login(),
                   child: const Text("Login"),
@@ -96,6 +102,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _logout(),
                   child: const Text("Logout"),
                 ),
+                /*
                 ElevatedButton(
                   onPressed: () => _checkUserLoggedIn(),
                   child: const Text("Check LoggedIn"),
@@ -108,6 +115,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _clearFields(),
                   child: const Text("Clear Fields"),
                 ),
+                */
                 ElevatedButton(
                   onPressed: () => _show(),
                   child: const Text("Show"),
@@ -201,7 +209,17 @@ class _MyAppState extends State<MyApp> {
     */
   }
 
-  void _show() {
-    ZendeskMessaging.show();
+  void _show() async {
+    Failure? failure = await ZendeskMessaging.show();
+    if (failure != null) {
+      setState(() {
+        if (failure.dataType == ZendeskError) {
+          channelMessages.add(
+              "show - ${jsonEncode((failure.data as ZendeskError).toJson())}");
+        } else {
+          channelMessages.add("show - $failure");
+        }
+      });
+    }
   }
 }

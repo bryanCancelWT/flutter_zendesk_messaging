@@ -23,7 +23,7 @@ extension ZendeskErrorExtn on ZendeskError {
       localizedFailureReasonIOS: args?["localizedFailureReasonIOS"],
 
       /// ! null since anything here is an OS error
-      nonOSError: null,
+      nonOSError: args?["nonOSError"],
     );
   }
 }
@@ -232,8 +232,10 @@ class ZendeskServiceChannel implements ZendeskService {
   @override
   Future<Failure?> show() async {
     try {
-      ZendeskError? result = await _channel.invokeMethod('show');
-      return result != null ? Failure(result) : null;
+      dynamic result = await _channel.invokeMethod('show');
+      Failure? fail =
+          result != null ? Failure(ZendeskErrorExtn.fromArgs(result)) : null;
+      return fail;
     } on PlatformException catch (e, s) {
       return Failure(e, s);
     }

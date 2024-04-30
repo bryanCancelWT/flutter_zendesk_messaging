@@ -57,16 +57,4 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 result(FlutterMethodNotImplemented)
         }
     }
-
-    private func handleMessageCount() ->Int{
-         let zendeskMessaging = ZendeskMessaging(flutterPlugin: self, channel: channel)
-
-        return zendeskMessaging.getUnreadMessageCount()
-    }
-    private func handleInitializedStatus() ->Bool{
-        return isInitialized
-    }
-    private func handleLoggedInStatus() ->Bool{
-        return isLoggedIn
-    }
 }

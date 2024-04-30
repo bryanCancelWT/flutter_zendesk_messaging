@@ -60,3 +60,63 @@ class ZendeskMessaging {
     return await zendeskService!.show();
   }
 }
+
+// Extension on ZendeskUser to include serialization and utility methods.
+extension ZendeskUserExtensions on ZendeskUser {
+  // Converts a ZendeskUser instance to a JSON map.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'externalId': externalId,
+    };
+  }
+
+  // Creates a ZendeskUser instance from a JSON map.
+  static ZendeskUser fromJson(Map<String, dynamic> json) {
+    return ZendeskUser(
+      id: json['id'] as String?,
+      externalId: json['externalId'] as String?,
+    );
+  }
+}
+
+// Extension on ZendeskError to include serialization and utility methods.
+extension ZendeskErrorExtensions on ZendeskError {
+  // Converts a ZendeskError instance to a JSON map.
+  Map<String, dynamic> toJson() {
+    return {
+      'messageAndroid': messageAndroid,
+      'toStringAndroid': toStringAndroid,
+      'codeIOS': codeIOS,
+      'domainIOS': domainIOS,
+      'userInfoIOS': userInfoIOS,
+      'localizedDescriptionIOS': localizedDescriptionIOS,
+      'localizedRecoveryOptionsIOS':
+          localizedRecoveryOptionsIOS?.map((item) => item).toList(),
+      'localizedRecoverySuggestionIOS': localizedRecoverySuggestionIOS,
+      'localizedFailureReasonIOS': localizedFailureReasonIOS,
+      'nonOSError': nonOSError,
+    };
+  }
+
+  // Creates a ZendeskError instance from a JSON map.
+  static ZendeskError fromJson(Map<String, dynamic> json) {
+    return ZendeskError(
+      messageAndroid: json['messageAndroid'] as String?,
+      toStringAndroid: json['toStringAndroid'] as String?,
+      codeIOS: json['codeIOS'] as int?,
+      domainIOS: json['domainIOS'] as String?,
+      userInfoIOS: (json['userInfoIOS'] as Map<String?, dynamic>?)
+          ?.map((key, value) => MapEntry(key, value.toString())),
+      localizedDescriptionIOS: json['localizedDescriptionIOS'] as String?,
+      localizedRecoveryOptionsIOS:
+          (json['localizedRecoveryOptionsIOS'] as List<dynamic>?)
+              ?.map((item) => item.toString())
+              .toList(),
+      localizedRecoverySuggestionIOS:
+          json['localizedRecoverySuggestionIOS'] as String?,
+      localizedFailureReasonIOS: json['localizedFailureReasonIOS'] as String?,
+      nonOSError: json['nonOSError'] as String?,
+    );
+  }
+}
