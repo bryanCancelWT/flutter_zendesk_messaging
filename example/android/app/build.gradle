@@ -23,8 +23,12 @@ if (flutterVersionName == null) {
 }
 
 android {
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+    
     if (project.android.hasProperty('namespace')) {
-        namespace 'com.chyiiiiiiiiiiiiii.zendesk_messaging'
+        namespace 'com.chyiiiiiiiiiiiiii.zendesk_messaging_example'
     }
 
     compileSdkVersion 34
