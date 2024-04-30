@@ -28,33 +28,22 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         let method = call.method
         let arguments = call.arguments as? Dictionary<String, Any>
         let zendeskMessaging = ZendeskMessaging(flutterPlugin: self, channel: channel)
-        
+
         switch(method){
             case "initialize":
-                let channelKey: String = (arguments?["channelKey"] ?? "") as! String
-                zendeskMessaging.initialize(channelKey: channelKey)
-                break;
+                zendeskMessaging.initialize(channelKey: arguments?["channelKey"] as? String)
+                 result(nil) 
             case "show":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging needs to be initialized first.\n")
-                }
-                zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController)
-                break
+                result(zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController))
             case "loginUser":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging needs to be initialized first.\n")
-                }
-                let jwt: String = arguments?["jwt"] as! String
-                zendeskMessaging.loginUser(jwt: jwt)
-                break
+                zendeskMessaging.loginUser(jwt: arguments?["jwt"] as? String)
+                 result(nil) 
             case "logoutUser":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging needs to be initialized first.\n")
-                }
                 zendeskMessaging.logoutUser()
-                break
+                 result(nil) 
             default:
                 result(FlutterMethodNotImplemented)
         }
     }
+
 }

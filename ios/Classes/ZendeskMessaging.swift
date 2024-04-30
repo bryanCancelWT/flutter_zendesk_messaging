@@ -14,9 +14,13 @@ public class ZendeskMessaging: NSObject {
     private static var logoutFailure: String = "logout_failure"
 
     /// non os errors
-    private static var alreadyInitialized: String = "already initialized"
-    private static var notInitialized: String = "not initialized"
-    private static var failedToLogout: String = "failed to logout"
+    private static var alreadyInitialized: String = "alreadyInitialized"
+    private static var notInitialized: String = "notInitialized"
+    private static var invalidParameter: String = "invalidParameter"
+    private static var nullActivity: String = "nullActivity"
+    private static var failedToLogout: String = "failedToLogout"
+    private static var noMessagingController: String = "noMessagingController"
+    private static var noRootController: String = "noRootController"
     
     /// other
     private var zendeskPlugin: SwiftZendeskMessagingPlugin? = nil
@@ -42,13 +46,18 @@ public class ZendeskMessaging: NSObject {
     /// Call Zendesk.initialize(withChannelKey: ,messagingFactory: ,completionHandler:).
     /// 
     /// If successful, an instance of messaging is returned. You don't have to keep a reference to the returned instance because you can access it anytime by using Zendesk.instance.
-    func initialize(channelKey: String) {
+    func initialize(channelKey: String?) {
         if (self.zendeskPlugin?.isInitialized == true) {
             self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.alreadyInitialized])
             return
         }
 
-        Zendesk.initialize(withChannelKey: channelKey, messagingFactory: DefaultMessagingFactory()) { result in
+        if(channelKey == nil || channelKey!.isEmpty){
+            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.invalidParameter])
+            return
+        }
+
+        Zendesk.initialize(withChannelKey: channelKey!, messagingFactory: DefaultMessagingFactory()) { result in
             DispatchQueue.main.async {
                 if case let .failure(error) = result {
                     self.zendeskPlugin?.isInitialized = false
@@ -66,22 +75,24 @@ public class ZendeskMessaging: NSObject {
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/getting_started/#show-the-conversation
     /// 
     /// Call the messagingViewController() method as part of the messaging reference returned during initialization.
-    func show(rootViewController: UIViewController?) {
-        guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() as? UIViewController else {
-            print("\(self.TAG) - Unable to create Zendesk messaging view controller")
-            return
+    func show(rootViewController: UIViewController?)  -> [String: Any]? {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            return ["nonOSError": ZendeskMessaging.notInitialized]
         }
+
+        guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() as? UIViewController else {
+            return ["nonOSError": ZendeskMessaging.noMessagingController]
+        }
+
         guard let rootViewController = rootViewController else {
-            print("\(self.TAG) - Root view controller is nil")
-            return
+            return ["nonOSError": ZendeskMessaging.noRootController]
         }
 
         // Check if rootViewController is already presenting another view controller
         if let presentedVC = rootViewController.presentedViewController {
             // Check if the presentedVC is the same instance as messagingViewController
             if presentedVC === messagingViewController {
-                // If the same instance, do nothing or update it as necessary
-                print("\(self.TAG) - Zendesk messaging view controller is already presented")
+                return nil
             } else {
                 // Dismiss current and present new, or just present new
                 presentedVC.dismiss(animated: true) {
@@ -93,7 +104,7 @@ public class ZendeskMessaging: NSObject {
             rootViewController.present(messagingViewController, animated: true, completion: nil)
         }
 
-        print("\(self.TAG) - show")
+        return nil
     }
 
     /// Unread Messages
@@ -151,13 +162,18 @@ public class ZendeskMessaging: NSObject {
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#loginuser
     /// 
     /// To authenticate a user call the loginUser API with your own JWT.
-    func loginUser(jwt: String) {
+    func loginUser(jwt: String?) {
         if (self.zendeskPlugin?.isInitialized == false) {
             self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["nonOSError": ZendeskMessaging.notInitialized])
             return
         }
 
-        Zendesk.instance?.loginUser(with: jwt) { result in
+        if(jwt == nil || jwt!.isEmpty){
+            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.invalidParameter])
+            return
+        }
+
+        Zendesk.instance?.loginUser(with: jwt!) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
