@@ -31,10 +31,6 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         
         switch(method){
             case "initialize":
-                if (isInitialized) {
-                    print("\(TAG) - Messaging is already initialize!\n")
-                    return
-                }
                 let channelKey: String = (arguments?["channelKey"] ?? "") as! String
                 zendeskMessaging.initialize(channelKey: channelKey)
                 break;

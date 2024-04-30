@@ -20,6 +20,15 @@ public class ZendeskMessaging: NSObject {
         self.channel = channel
     }
 
+    func _errorToMap(error: Error) -> [String: Any] {
+        if let nsError = error as? NSError {
+            return nsError.zendeskError;
+        } else {
+            let errorString = String(describing: error)
+            return ["nonOSError": "unknown error type - \(errorString)"]
+        }
+    }
+
     /// Initialize
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/getting_started/#initialize-the-sdk
     /// 
@@ -27,16 +36,18 @@ public class ZendeskMessaging: NSObject {
     /// 
     /// If successful, an instance of messaging is returned. You don't have to keep a reference to the returned instance because you can access it anytime by using Zendesk.instance.
     func initialize(channelKey: String) {
-        print("\(self.TAG) - Channel Key - \(channelKey)\n")
+        if (self.zendeskPlugin?.isInitialized == true) {
+            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": "already initialized"])
+            return
+        }
+
         Zendesk.initialize(withChannelKey: channelKey, messagingFactory: DefaultMessagingFactory()) { result in
             DispatchQueue.main.async {
                 if case let .failure(error) = result {
                     self.zendeskPlugin?.isInitialized = false
-                    print("\(self.TAG) - initialize failure - \(error.localizedDescription)\n")
-                    self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["error": error.localizedDescription])
+                    self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: self._errorToMap(error: error))
                 } else {
                     self.zendeskPlugin?.isInitialized = true
-                    print("\(self.TAG) - initialize success")
                     self.channel?.invokeMethod(ZendeskMessaging.initializeSuccess, arguments: [:])
                 }
             }
@@ -288,5 +299,27 @@ public class ZendeskMessaging: NSObject {
         Zendesk.invalidate()
        self.zendeskPlugin?.isInitialized = false
        print("\(self.TAG) - invalidate")
+    }
+}
+
+extension NSError {
+    func _toStringString(input: [String: Any]) -> [String: String] {
+        var stringDictionary: [String: String] = [:]
+        for (key, value) in input {
+            stringDictionary[key] = String(describing: value)
+        }
+        return stringDictionary
+    }
+
+    var zendeskError: [String: Any] {
+        return [
+            "codeIOS" : self.code,
+            "domainIOS" : self.domain,
+            "userInfoIOS" : _toStringString(input : self.userInfo),
+            "localizedDescriptionIOS" : self.localizedDescription,
+            "localizedRecoveryOptionsIOS" : self.localizedRecoveryOptions,
+            "localizedRecoverySuggestionIOS" : self.localizedRecoverySuggestion,
+            "localizedFailureReasonIOS" : self.localizedFailureReason,
+        ]
     }
 }
