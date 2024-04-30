@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:multiple_result/multiple_result.dart';
 import 'package:zendesk_messaging/failure.dart';
@@ -24,7 +23,7 @@ extension ZendeskErrorExtn on ZendeskError {
       localizedFailureReasonIOS: args?["localizedFailureReasonIOS"],
 
       /// ! null since anything here is an OS error
-      nonOSError: null,
+      nonOSError: args?["nonOSError"],
     );
   }
 }
@@ -225,128 +224,20 @@ class ZendeskServiceChannel implements ZendeskService {
   ///
   ///
   ///
-  /// Get Unread Message Count
-  ///
-  ///
-  ///
-
-  @override
-  Future<Result<int, Failure>> getUnreadMessageCount() async {
-    try {
-      int result = await _channel.invokeMethod('getUnreadMessageCount');
-      return Result<int, Failure>.success(result);
-    } on PlatformException catch (e, s) {
-      debugPrint('ZendeskMessaging - count - Error: $e}');
-      return Result<int, Failure>.error(Failure(e, s));
-    }
-  }
-
-  ///
-  ///
-  ///
   /// No Completers Required
   ///
   ///
   ///
 
   @override
-  Future<Failure?> invalidate() async {
-    try {
-      ZendeskError? result = await _channel.invokeMethod('invalidate');
-      return result != null ? Failure(result) : null;
-    } on PlatformException catch (e, s) {
-      return Failure(e, s);
-    }
-  }
-
-  @override
   Future<Failure?> show() async {
     try {
-      ZendeskError? result = await _channel.invokeMethod('show');
-      return result != null ? Failure(result) : null;
+      dynamic result = await _channel.invokeMethod('show');
+      Failure? fail =
+          result != null ? Failure(ZendeskErrorExtn.fromArgs(result)) : null;
+      return fail;
     } on PlatformException catch (e, s) {
       return Failure(e, s);
-    }
-  }
-
-  @override
-  Future<Failure?> setConversationTags(List<String> tags) async {
-    try {
-      ZendeskError? result = await _channel.invokeMethod(
-        'setConversationTags',
-        {'tags': tags},
-      );
-      return result != null ? Failure(result) : null;
-    } on PlatformException catch (e, s) {
-      return Failure(e, s);
-    }
-  }
-
-  @override
-  Future<Failure?> clearConversationTags() async {
-    try {
-      ZendeskError? result = await _channel.invokeMethod(
-        'clearConversationTags',
-      );
-      return result != null ? Failure(result) : null;
-    } on PlatformException catch (e, s) {
-      return Failure(e, s);
-    }
-  }
-
-  @override
-  Future<Failure?> setConversationFields(Map<String, String> fields) async {
-    try {
-      ZendeskError? result = await _channel.invokeMethod(
-        'setConversationFields',
-        {'fields': fields},
-      );
-      return result != null ? Failure(result) : null;
-    } on PlatformException catch (e, s) {
-      return Failure(e, s);
-    }
-  }
-
-  @override
-  Future<Failure?> clearConversationFields() async {
-    try {
-      ZendeskError? result = await _channel.invokeMethod(
-        'clearConversationFields',
-      );
-      return result != null ? Failure(result) : null;
-    } on PlatformException catch (e, s) {
-      return Failure(e, s);
-    }
-  }
-
-  ///
-  ///
-  ///
-  /// Other
-  /// - can only fail while being called from flutter
-  ///
-  ///
-  ///
-
-  @override
-  Future<Result<bool, Failure>> isInitialized() async {
-    try {
-      return Result<bool, Failure>.success(await _channel.invokeMethod(
-        'isInitialized',
-      ));
-    } on PlatformException catch (e, s) {
-      return Result<bool, Failure>.error(Failure(e, s));
-    }
-  }
-
-  @override
-  Future<Result<bool, Failure>> isLoggedIn() async {
-    try {
-      return Result<bool, Failure>.success(await _channel.invokeMethod(
-        'isLoggedIn',
-      ));
-    } on PlatformException catch (e, s) {
-      return Result<bool, Failure>.error(Failure(e, s));
     }
   }
 }

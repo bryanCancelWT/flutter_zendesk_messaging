@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:multiple_result/multiple_result.dart';
 import 'package:zendesk_messaging/failure.dart';
 import 'package:zendesk_messaging/service.dart';
+import 'package:zendesk_messaging/zendesk_pigeon.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,7 +42,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    ZendeskMessaging.invalidate();
+    /// TODO: eventually uncomment
+    /// ZendeskMessaging.invalidate();
     super.dispose();
   }
 
@@ -70,6 +73,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                   child: const Text("Initialize"),
                 ),
+                /*
                 if (isLogin) ...[
                   ElevatedButton(
                     onPressed: () => ZendeskMessaging.show(),
@@ -89,6 +93,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _clearTags(),
                   child: const Text("Clear tags"),
                 ),
+                */
                 ElevatedButton(
                   onPressed: () => _login(),
                   child: const Text("Login"),
@@ -97,6 +102,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _logout(),
                   child: const Text("Logout"),
                 ),
+                /*
                 ElevatedButton(
                   onPressed: () => _checkUserLoggedIn(),
                   child: const Text("Check LoggedIn"),
@@ -109,6 +115,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _clearFields(),
                   child: const Text("Clear Fields"),
                 ),
+                */
                 ElevatedButton(
                   onPressed: () => _show(),
                   child: const Text("Show"),
@@ -134,6 +141,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _getUnreadMessageCount() async {
+    /// TODO: eventually uncomment
+    /*
     Result<int, Failure> messageCount =
         await ZendeskMessaging.getUnreadMessageCount();
     if (mounted) {
@@ -146,18 +155,27 @@ class _MyAppState extends State<MyApp> {
         (error) {},
       );
     }
+    */
   }
 
   void _setTags() async {
+    /// TODO: eventually uncomment
+    /*
     final tags = ['tag1', 'tag2', 'tag3'];
     await ZendeskMessaging.setConversationTags(tags);
+    */
   }
 
   void _clearTags() async {
+    /// TODO: eventually uncomment
+    /*
     await ZendeskMessaging.clearConversationTags();
+    */
   }
 
   void _checkUserLoggedIn() async {
+    /// TODO: eventually uncomment
+    /*
     Result<bool, Failure> isLoggedIn = await ZendeskMessaging.isLoggedIn();
     if (mounted) {
       isLoggedIn.when(
@@ -169,22 +187,39 @@ class _MyAppState extends State<MyApp> {
         (error) {},
       );
     }
+    */
   }
 
   void _setFields() async {
+    /// TODO: eventually uncomment
+    /*
     Map<String, String> fieldsMap = {};
 
     fieldsMap["field1"] = "Value 1";
     fieldsMap["field2"] = "Value 2";
 
     await ZendeskMessaging.setConversationFields(fieldsMap);
+    */
   }
 
   void _clearFields() async {
+    /// TODO: eventually uncomment
+    /*
     await ZendeskMessaging.clearConversationFields();
+    */
   }
 
-  void _show() {
-    ZendeskMessaging.show();
+  void _show() async {
+    Failure? failure = await ZendeskMessaging.show();
+    if (failure != null) {
+      setState(() {
+        if (failure.dataType == ZendeskError) {
+          channelMessages.add(
+              "show - ${jsonEncode((failure.data as ZendeskError).toJson())}");
+        } else {
+          channelMessages.add("show - $failure");
+        }
+      });
+    }
   }
 }

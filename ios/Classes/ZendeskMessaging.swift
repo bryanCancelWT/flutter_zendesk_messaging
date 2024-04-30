@@ -3,15 +3,26 @@ import ZendeskSDKMessaging
 import ZendeskSDK
 
 public class ZendeskMessaging: NSObject {
+    let TAG = "[ZendeskMessaging]"
+
+    /// Method channel callback keys
     private static var initializeSuccess: String = "initialize_success"
     private static var initializeFailure: String = "initialize_failure"
     private static var loginSuccess: String = "login_success"
     private static var loginFailure: String = "login_failure"
     private static var logoutSuccess: String = "logout_success"
     private static var logoutFailure: String = "logout_failure"
+
+    /// non os errors
+    private static var alreadyInitialized: String = "alreadyInitialized"
+    private static var notInitialized: String = "notInitialized"
+    private static var invalidParameter: String = "invalidParameter"
+    private static var nullActivity: String = "nullActivity"
+    private static var failedToLogout: String = "failedToLogout"
+    private static var noMessagingController: String = "noMessagingController"
+    private static var noRootController: String = "noRootController"
     
-    let TAG = "[ZendeskMessaging]"
-    
+    /// other
     private var zendeskPlugin: SwiftZendeskMessagingPlugin? = nil
     private var channel: FlutterMethodChannel? = nil
 
@@ -35,13 +46,18 @@ public class ZendeskMessaging: NSObject {
     /// Call Zendesk.initialize(withChannelKey: ,messagingFactory: ,completionHandler:).
     /// 
     /// If successful, an instance of messaging is returned. You don't have to keep a reference to the returned instance because you can access it anytime by using Zendesk.instance.
-    func initialize(channelKey: String) {
+    func initialize(channelKey: String?) {
         if (self.zendeskPlugin?.isInitialized == true) {
-            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": "already initialized"])
+            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.alreadyInitialized])
             return
         }
 
-        Zendesk.initialize(withChannelKey: channelKey, messagingFactory: DefaultMessagingFactory()) { result in
+        if(channelKey == nil || channelKey!.isEmpty){
+            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.invalidParameter])
+            return
+        }
+
+        Zendesk.initialize(withChannelKey: channelKey!, messagingFactory: DefaultMessagingFactory()) { result in
             DispatchQueue.main.async {
                 if case let .failure(error) = result {
                     self.zendeskPlugin?.isInitialized = false
@@ -59,22 +75,24 @@ public class ZendeskMessaging: NSObject {
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/getting_started/#show-the-conversation
     /// 
     /// Call the messagingViewController() method as part of the messaging reference returned during initialization.
-    func show(rootViewController: UIViewController?) {
-        guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() as? UIViewController else {
-            print("\(self.TAG) - Unable to create Zendesk messaging view controller")
-            return
+    func show(rootViewController: UIViewController?)  -> [String: Any]? {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            return ["nonOSError": ZendeskMessaging.notInitialized]
         }
+
+        guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() as? UIViewController else {
+            return ["nonOSError": ZendeskMessaging.noMessagingController]
+        }
+
         guard let rootViewController = rootViewController else {
-            print("\(self.TAG) - Root view controller is nil")
-            return
+            return ["nonOSError": ZendeskMessaging.noRootController]
         }
 
         // Check if rootViewController is already presenting another view controller
         if let presentedVC = rootViewController.presentedViewController {
             // Check if the presentedVC is the same instance as messagingViewController
             if presentedVC === messagingViewController {
-                // If the same instance, do nothing or update it as necessary
-                print("\(self.TAG) - Zendesk messaging view controller is already presented")
+                return nil
             } else {
                 // Dismiss current and present new, or just present new
                 presentedVC.dismiss(animated: true) {
@@ -86,7 +104,7 @@ public class ZendeskMessaging: NSObject {
             rootViewController.present(messagingViewController, animated: true, completion: nil)
         }
 
-        print("\(self.TAG) - show")
+        return nil
     }
 
     /// Unread Messages
@@ -99,10 +117,7 @@ public class ZendeskMessaging: NSObject {
     /// In addition, you can retrieve the current total number of unread messages by calling getUnreadMessageCount() on Messaging on your Zendesk SDK instance.
     ///
     /// You can find a demo app showcasing this feature in our Zendesk SDK Demo app github.
-    func getUnreadMessageCount() -> Int {
-        let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
-        return count ?? 0
-    }
+    /// TODO:
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clickable-links-delegate
 
@@ -147,8 +162,18 @@ public class ZendeskMessaging: NSObject {
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#loginuser
     /// 
     /// To authenticate a user call the loginUser API with your own JWT.
-    func loginUser(jwt: String) {
-        Zendesk.instance?.loginUser(with: jwt) { result in
+    func loginUser(jwt: String?) {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["nonOSError": ZendeskMessaging.notInitialized])
+            return
+        }
+
+        if(jwt == nil || jwt!.isEmpty){
+            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.invalidParameter])
+            return
+        }
+
+        Zendesk.instance?.loginUser(with: jwt!) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
@@ -156,8 +181,7 @@ public class ZendeskMessaging: NSObject {
                     self.channel?.invokeMethod(ZendeskMessaging.loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
                     break
                 case .failure(let error):
-                    print("\(self.TAG) - login failure - \(error.localizedDescription)\n")
-                    self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["error": nil])
+                    self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: self._errorToMap(error: error))
                     break
                 }
             }
@@ -174,6 +198,11 @@ public class ZendeskMessaging: NSObject {
     /// Please note that there is no way for us to recover this data, so only use this for testing purposes. 
     /// The next time the unauthenticated user enters the conversation screen a new user and conversation will be created for them.
     func logoutUser() {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            self.channel?.invokeMethod(ZendeskMessaging.logoutFailure, arguments: ["nonOSError": ZendeskMessaging.notInitialized])
+            return
+        }
+        
         Zendesk.instance?.logoutUser { result in
             DispatchQueue.main.async {
                 switch result {
@@ -182,8 +211,7 @@ public class ZendeskMessaging: NSObject {
                     self.channel?.invokeMethod(ZendeskMessaging.logoutSuccess, arguments: [])
                     break
                 case .failure(let error):
-                    print("\(self.TAG) - logout failure - \(error.localizedDescription)\n")
-                    self.channel?.invokeMethod(ZendeskMessaging.logoutFailure, arguments: ["error": nil])
+                    self.channel?.invokeMethod(ZendeskMessaging.logoutFailure, arguments: ["nonOSError": ZendeskMessaging.failedToLogout])
                     break
                 }
             }
@@ -234,9 +262,7 @@ public class ZendeskMessaging: NSObject {
     /// AnyHashable	value of the custom ticket field
     /// 
     /// Note: The supported types for AnyHashable are string, number and boolean.
-    func setConversationFields(fields: [String: String]) {
-        Zendesk.instance?.messaging?.setConversationFields(fields)
-    }
+    /// TODO: 
 
     /// Clear Conversation Fields
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clear-conversation-fields
@@ -245,9 +271,7 @@ public class ZendeskMessaging: NSObject {
     /// To do this, use the clearConversationFields API. This removes all stored conversation fields from the SDK storage.
     ///
     /// Note: This API does not affect conversation fields already applied to the conversation.
-    func clearConversationFields() {
-        Zendesk.instance?.messaging?.clearConversationFields()
-    }
+    /// TODO: 
 
     /// 
     ///
@@ -268,9 +292,7 @@ public class ZendeskMessaging: NSObject {
     /// 
     /// Note: Conversation tags are not immediately associated with a conversation when the API is called. 
     /// It will only be applied to a conversation when end users either start a new conversation or send a new message in an existing conversation.
-    func setConversationTags(tags: [String]) {
-        Zendesk.instance?.messaging?.setConversationTags(tags)
-    }
+    /// TODO: 
 
     /// Clear Conversation Tags
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clear-conversation-tags
@@ -279,9 +301,7 @@ public class ZendeskMessaging: NSObject {
     /// To do this, use the clearConversationTags API. This removes all stored conversation tags from the SDK storage.
     /// 
     /// Note: This API does not affect conversation tags already applied to the conversation.
-    func clearConversationTags() {
-        Zendesk.instance?.messaging?.clearConversationTags()
-    }
+    /// TODO: 
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#postback-buttons-in-messaging
 
@@ -295,11 +315,7 @@ public class ZendeskMessaging: NSObject {
     /// If clearing storage not intended to be performed during invalidation, it will be cleared when the end user logs out. 
     /// The default value of the parameter is set to false to keep the previous behaviour of the SDK. 
     /// It is important to remember that once the Zendesk SDK is invalidated no messages nor notifications will be received.
-    func invalidate() {
-        Zendesk.invalidate()
-       self.zendeskPlugin?.isInitialized = false
-       print("\(self.TAG) - invalidate")
-    }
+    /// TODO: 
 }
 
 extension NSError {

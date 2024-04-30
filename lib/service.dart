@@ -14,21 +14,10 @@ abstract class ZendeskService {
   Future<Failure?> initializeZendesk(String channelKey);
   Future<Result<ZendeskUser, Failure>> loginUser(String jwt);
   Future<Failure?> logoutUser();
-  Future<Result<int, Failure>> getUnreadMessageCount();
 
   /// No Completers
   /// - can only return a failure from native
-  Future<Failure?> invalidate();
   Future<Failure?> show();
-  Future<Failure?> setConversationTags(List<String> tags);
-  Future<Failure?> clearConversationTags();
-  Future<Failure?> setConversationFields(Map<String, String> fields);
-  Future<Failure?> clearConversationFields();
-
-  /// Other
-  /// - can only fail while being called from flutter
-  Future<Result<bool, Failure>> isInitialized();
-  Future<Result<bool, Failure>> isLoggedIn();
 }
 
 class ZendeskMessaging {
@@ -67,43 +56,67 @@ class ZendeskMessaging {
     return await zendeskService!.logoutUser();
   }
 
-  static Future<Result<int, Failure>> getUnreadMessageCount() async {
-    return await zendeskService!.getUnreadMessageCount();
-  }
-
-  static Future<Failure?> invalidate() async {
-    return await zendeskService!.invalidate();
-  }
-
   static Future<Failure?> show() async {
     return await zendeskService!.show();
   }
+}
 
-  static Future<Failure?> setConversationTags(
-    List<String> tags,
-  ) async {
-    return await zendeskService!.setConversationTags(tags);
+// Extension on ZendeskUser to include serialization and utility methods.
+extension ZendeskUserExtensions on ZendeskUser {
+  // Converts a ZendeskUser instance to a JSON map.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'externalId': externalId,
+    };
   }
 
-  static Future<Failure?> clearConversationTags() async {
-    return await zendeskService!.clearConversationTags();
+  // Creates a ZendeskUser instance from a JSON map.
+  static ZendeskUser fromJson(Map<String, dynamic> json) {
+    return ZendeskUser(
+      id: json['id'] as String?,
+      externalId: json['externalId'] as String?,
+    );
+  }
+}
+
+// Extension on ZendeskError to include serialization and utility methods.
+extension ZendeskErrorExtensions on ZendeskError {
+  // Converts a ZendeskError instance to a JSON map.
+  Map<String, dynamic> toJson() {
+    return {
+      'messageAndroid': messageAndroid,
+      'toStringAndroid': toStringAndroid,
+      'codeIOS': codeIOS,
+      'domainIOS': domainIOS,
+      'userInfoIOS': userInfoIOS,
+      'localizedDescriptionIOS': localizedDescriptionIOS,
+      'localizedRecoveryOptionsIOS':
+          localizedRecoveryOptionsIOS?.map((item) => item).toList(),
+      'localizedRecoverySuggestionIOS': localizedRecoverySuggestionIOS,
+      'localizedFailureReasonIOS': localizedFailureReasonIOS,
+      'nonOSError': nonOSError,
+    };
   }
 
-  static Future<Failure?> setConversationFields(
-    Map<String, String> fields,
-  ) async {
-    return await zendeskService!.setConversationFields(fields);
-  }
-
-  static Future<Failure?> clearConversationFields() async {
-    return await zendeskService!.clearConversationFields();
-  }
-
-  static Future<Result<bool, Failure>> isInitialized() async {
-    return await zendeskService!.isInitialized();
-  }
-
-  static Future<Result<bool, Failure>> isLoggedIn() async {
-    return await zendeskService!.isLoggedIn();
+  // Creates a ZendeskError instance from a JSON map.
+  static ZendeskError fromJson(Map<String, dynamic> json) {
+    return ZendeskError(
+      messageAndroid: json['messageAndroid'] as String?,
+      toStringAndroid: json['toStringAndroid'] as String?,
+      codeIOS: json['codeIOS'] as int?,
+      domainIOS: json['domainIOS'] as String?,
+      userInfoIOS: (json['userInfoIOS'] as Map<String?, dynamic>?)
+          ?.map((key, value) => MapEntry(key, value.toString())),
+      localizedDescriptionIOS: json['localizedDescriptionIOS'] as String?,
+      localizedRecoveryOptionsIOS:
+          (json['localizedRecoveryOptionsIOS'] as List<dynamic>?)
+              ?.map((item) => item.toString())
+              .toList(),
+      localizedRecoverySuggestionIOS:
+          json['localizedRecoverySuggestionIOS'] as String?,
+      localizedFailureReasonIOS: json['localizedFailureReasonIOS'] as String?,
+      nonOSError: json['nonOSError'] as String?,
+    );
   }
 }
