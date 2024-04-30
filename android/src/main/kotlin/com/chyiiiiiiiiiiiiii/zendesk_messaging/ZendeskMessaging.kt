@@ -11,8 +11,6 @@ import zendesk.messaging.android.DefaultMessagingFactory
 
 class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val channel: MethodChannel) {
     companion object {
-        const val tag = "[ZendeskMessaging]"
-
         /// Method channel callback keys
         const val initializeSuccess: String = "initialize_success"
         const val initializeFailure: String = "initialize_failure"
@@ -22,9 +20,11 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val logoutFailure: String = "logout_failure"
 
         /// non os errors
-        const val alreadyInitialized: String = "already initialized"
-        const val notInitialized: String = "not initialized"
-        const val failedToLogout: String = "failed to logout"
+        const val alreadyInitialized: String = "alreadyInitialized"
+        const val notInitialized: String = "notInitialized"
+        const val invalidParameter: String = "invalidParameter"
+        const val nullActivity: String = "nullActivity"
+        const val failedToLogout: String = "failedToLogout"
     }
     
     fun _errorToMap(error: Any): Map<String, String> {
@@ -44,11 +44,19 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// If you don't have admin access to Zendesk, ask a Zendesk admin to get the information for you.
     ///
     /// The snippets below give an example of a Messaging initialization in both Kotlin and Java.
-
-    /// TODO: isInitialized check - try catch wrap
-    fun initialize(channelKey: String) {
+    fun initialize(channelKey: String?) {
         if (plugin.isInitialized) {
             channel.invokeMethod(initializeFailure, mapOf("nonOSError" to alreadyInitialized))
+            return
+        }
+
+        if (channelKey.isNullOrEmpty()) {
+            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to invalidParameter))
+            return
+        }
+
+        if (plugin.activity == null) {
+            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to nullActivity))
             return
         }
      
@@ -60,23 +68,30 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
                 channel.invokeMethod(initializeSuccess, null)
             },
             failureCallback = { error ->
-                plugin.isInitialized = false
                 channel.invokeMethod(initializeFailure, _errorToMap(error))
             },
             messagingFactory = DefaultMessagingFactory(),
         )
     }
 
-
     /// Show the conversation
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/getting_started/#show-the-conversation
     /// 
     /// If Zendesk.initialize() is successful, you can use the code snippets below anywhere in your app to show the conversation screen.
     /// If Zendesk.initialize() is not successful, a stub implementation of the Zendesk class is returned that logs to the console.
-    fun show() {
+    fun show(): Map<String, Any?> {
+        if (plugin.isInitialized == false) {
+            return mapOf("nonOSError" to notInitialized)
+        }
+
+        if (plugin.activity == null) {
+            return mapOf("nonOSError" to nullActivity)
+        }
+
         Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
-        println("$tag - show")
+        return null
     }
+
 
     /// Unread Messages
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/getting_started/#unread-messages
@@ -138,10 +153,20 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             return
         }
 
+        if (jwt.isNullOrEmpty()) {
+            channel.invokeMethod(loginFailure, mapOf("nonOSError" to invalidParameter))
+            return
+        }
+
+        if (plugin.activity == null) {
+            channel.invokeMethod(loginFailure, mapOf("nonOSError" to nullActivity))
+            return
+        }
+
         Zendesk.instance.loginUser(
             jwt,
             { value: ZendeskUser? ->
-                plugin.isLoggedIn = true;
+                plugin.isLoggedIn = true
                 value?.let {
                     channel.invokeMethod(loginSuccess, mapOf("id" to it.id, "externalId" to it.externalId))
                 } ?: run {
@@ -168,16 +193,21 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             return
         }
 
+        if (plugin.activity == null) {
+            channel.invokeMethod(logoutFailure, mapOf("nonOSError" to nullActivity))
+            return
+        }
+
         GlobalScope.launch (Dispatchers.Main)  {
             try {
                 Zendesk.instance.logoutUser(successCallback = {
-                    plugin.isLoggedIn = false;
+                    plugin.isLoggedIn = false
                     channel.invokeMethod(logoutSuccess, null)
                 }, failureCallback = {
                     channel.invokeMethod(logoutFailure, mapOf("nonOSError" to failedToLogout))
-                });
+                })
             } catch (error: Throwable) {
-                channel.invokeMethod(logoutFailure, mapOf("nonOSError" to failedToLogout))
+                channel.invokeMethod(logoutFailure, mapOf("nonOSError" to _errorToMap(error)))
             }
         }
     }
