@@ -14,21 +14,10 @@ abstract class ZendeskService {
   Future<Failure?> initializeZendesk(String channelKey);
   Future<Result<ZendeskUser, Failure>> loginUser(String jwt);
   Future<Failure?> logoutUser();
-  Future<Result<int, Failure>> getUnreadMessageCount();
 
   /// No Completers
   /// - can only return a failure from native
-  Future<Failure?> invalidate();
   Future<Failure?> show();
-  Future<Failure?> setConversationTags(List<String> tags);
-  Future<Failure?> clearConversationTags();
-  Future<Failure?> setConversationFields(Map<String, String> fields);
-  Future<Failure?> clearConversationFields();
-
-  /// Other
-  /// - can only fail while being called from flutter
-  Future<Result<bool, Failure>> isInitialized();
-  Future<Result<bool, Failure>> isLoggedIn();
 }
 
 class ZendeskMessaging {
@@ -67,43 +56,7 @@ class ZendeskMessaging {
     return await zendeskService!.logoutUser();
   }
 
-  static Future<Result<int, Failure>> getUnreadMessageCount() async {
-    return await zendeskService!.getUnreadMessageCount();
-  }
-
-  static Future<Failure?> invalidate() async {
-    return await zendeskService!.invalidate();
-  }
-
   static Future<Failure?> show() async {
     return await zendeskService!.show();
-  }
-
-  static Future<Failure?> setConversationTags(
-    List<String> tags,
-  ) async {
-    return await zendeskService!.setConversationTags(tags);
-  }
-
-  static Future<Failure?> clearConversationTags() async {
-    return await zendeskService!.clearConversationTags();
-  }
-
-  static Future<Failure?> setConversationFields(
-    Map<String, String> fields,
-  ) async {
-    return await zendeskService!.setConversationFields(fields);
-  }
-
-  static Future<Failure?> clearConversationFields() async {
-    return await zendeskService!.clearConversationFields();
-  }
-
-  static Future<Result<bool, Failure>> isInitialized() async {
-    return await zendeskService!.isInitialized();
-  }
-
-  static Future<Result<bool, Failure>> isLoggedIn() async {
-    return await zendeskService!.isLoggedIn();
   }
 }

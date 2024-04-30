@@ -53,53 +53,6 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 }
                 zendeskMessaging.logoutUser()
                 break
-            case "getUnreadMessageCount":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging needs to be initialized first.\n")
-                }
-                result(handleMessageCount())
-                break
-            
-            case "isInitialized":
-                result(handleInitializedStatus())
-                break
-            case "isLoggedIn":
-                result(handleLoggedInStatus())
-                break
-            
-            case "setConversationTags":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging needs to be initialized first.\n")
-                }
-                let tags: [String] = arguments?["tags"] as! [String]
-                zendeskMessaging.setConversationTags(tags:tags)
-                break
-            case "clearConversationTags":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging needs to be initialized first.\n")
-                }
-                zendeskMessaging.clearConversationTags()
-                break
-            case "setConversationFields":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging needs to be initialized first.\n")
-                }
-                let fields: [String: String] = arguments?["fields"] as! [String: String]
-                zendeskMessaging.setConversationFields(fields:fields)
-                break
-            case "clearConversationFields":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging needs to be initialized first.\n")
-                }
-                zendeskMessaging.clearConversationFields()
-                break
-            case "invalidate":
-                if (!isInitialized) {
-                    print("\(TAG) - Messaging is already on an invalid state\n")
-                    return
-                }
-                zendeskMessaging.invalidate()
-                break
             default:
                 result(FlutterMethodNotImplemented)
         }

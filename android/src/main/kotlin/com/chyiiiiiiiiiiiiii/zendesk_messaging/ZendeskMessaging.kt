@@ -20,8 +20,6 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val loginFailure: String = "login_failure"
         const val logoutSuccess: String = "logout_success"
         const val logoutFailure: String = "logout_failure"
-        const val getUnreadMessageCountSuccess: String = "get_unread_message_count_success"
-        const val getUnreadMessageCountFailure: String = "get_unread_message_count_failure"
 
         /// non os errors
         const val alreadyInitialized: String = "already initialized"
@@ -90,18 +88,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// In addition, you can retrieve the current total number of unread messages by calling getUnreadMessageCount() on Messaging on your Zendesk SDK instance.
     /// 
     /// You can find a demo app showcasing this feature in our Zendesk SDK Demo app github.
-    fun getUnreadMessageCount() {
-        if(plugin.isInitialized == false) {
-            channel.invokeMethod(getUnreadMessageCountFailure, mapOf("nonOSError" to notInitialized))
-            return
-        }
-
-        try {
-            channel.invokeMethod(getUnreadMessageCountSuccess, mapOf("result" to Zendesk.instance.messaging.getUnreadMessageCount()))
-        }catch (error: Throwable){
-            channel.invokeMethod(getUnreadMessageCountFailure, mapOf(_errorToMap(error)))
-        }
-    }
+    /// TODO: 
 
     /// TODO: https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#clickable-links-delegate
     /// TODO: https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#events
@@ -237,9 +224,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// Any	value of custom ticket field
     /// 
     /// Note: Supported types for Any are string, number and boolean.
-    fun setConversationFields(fields: Map<String, String>){
-        Zendesk.instance.messaging.setConversationFields(fields)
-    }
+    /// TODO: 
 
     /// Clear Conversation Fields
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#clear-conversation-fields
@@ -248,9 +233,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// To do this, use the clearConversationFields API. This removes all stored conversation fields from the SDK storage.
     ///
     /// Note: This API does not affect conversation fields already applied to the conversation.
-    fun clearConversationFields(){
-        Zendesk.instance.messaging.clearConversationFields()
-    }
+    /// TODO: 
 
     /// 
     ///
@@ -271,9 +254,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     ///
     /// Note: Conversation tags are not immediately associated with a conversation when the API is called. 
     /// It will only be applied to a conversation when end users either start a new conversation or send a new message in an existing conversation.
-    fun setConversationTags(tags: List<String>){
-        Zendesk.instance.messaging.setConversationTags(tags)
-    }
+    /// TODO: 
 
     /// Clear Conversation Tags
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#clear-conversation-tags
@@ -282,9 +263,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// To do this, use the clearConversationTags API. This removes all stored conversation tags from the SDK storage.
     ///
     /// Note: This API does not affect conversation tags already applied to the conversation.
-    fun clearConversationTags(){
-        Zendesk.instance.messaging.clearConversationTags()
-    }
+    /// TODO: 
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#postback-buttons-in-messaging
 
@@ -296,11 +275,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// This ensures that unused data does not accumulate over time, freeing up system resources. 
     /// When the end user logs out, the Zendesk SDK removes all user details from local storages and terminates the real-time connection. 
     /// Invalidating the Zendesk SDK instance means that no messages nor notifications will be received.
-    fun invalidate() {
-        Zendesk.invalidate()
-        plugin.isInitialized = false;
-        println("$tag - invalidated")
-    }
+    /// TODO: 
 }
 
 val Throwable.zendeskError: Map<String, String>

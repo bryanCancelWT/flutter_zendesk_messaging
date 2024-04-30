@@ -12,8 +12,6 @@ public class ZendeskMessaging: NSObject {
     private static var loginFailure: String = "login_failure"
     private static var logoutSuccess: String = "logout_success"
     private static var logoutFailure: String = "logout_failure"
-    private static var getUnreadMessageCountSuccess: String = "get_unread_message_count_success"
-    private static var getUnreadMessageCountFailure: String = "get_unread_message_count_failure"
 
     /// non os errors
     private static var alreadyInitialized: String = "already initialized"
@@ -108,10 +106,7 @@ public class ZendeskMessaging: NSObject {
     /// In addition, you can retrieve the current total number of unread messages by calling getUnreadMessageCount() on Messaging on your Zendesk SDK instance.
     ///
     /// You can find a demo app showcasing this feature in our Zendesk SDK Demo app github.
-    func getUnreadMessageCount() -> Int {
-        let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
-        return count ?? 0
-    }
+    /// TODO:
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clickable-links-delegate
 
@@ -251,9 +246,7 @@ public class ZendeskMessaging: NSObject {
     /// AnyHashable	value of the custom ticket field
     /// 
     /// Note: The supported types for AnyHashable are string, number and boolean.
-    func setConversationFields(fields: [String: String]) {
-        Zendesk.instance?.messaging?.setConversationFields(fields)
-    }
+    /// TODO: 
 
     /// Clear Conversation Fields
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clear-conversation-fields
@@ -262,9 +255,7 @@ public class ZendeskMessaging: NSObject {
     /// To do this, use the clearConversationFields API. This removes all stored conversation fields from the SDK storage.
     ///
     /// Note: This API does not affect conversation fields already applied to the conversation.
-    func clearConversationFields() {
-        Zendesk.instance?.messaging?.clearConversationFields()
-    }
+    /// TODO: 
 
     /// 
     ///
@@ -285,9 +276,7 @@ public class ZendeskMessaging: NSObject {
     /// 
     /// Note: Conversation tags are not immediately associated with a conversation when the API is called. 
     /// It will only be applied to a conversation when end users either start a new conversation or send a new message in an existing conversation.
-    func setConversationTags(tags: [String]) {
-        Zendesk.instance?.messaging?.setConversationTags(tags)
-    }
+    /// TODO: 
 
     /// Clear Conversation Tags
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clear-conversation-tags
@@ -296,9 +285,7 @@ public class ZendeskMessaging: NSObject {
     /// To do this, use the clearConversationTags API. This removes all stored conversation tags from the SDK storage.
     /// 
     /// Note: This API does not affect conversation tags already applied to the conversation.
-    func clearConversationTags() {
-        Zendesk.instance?.messaging?.clearConversationTags()
-    }
+    /// TODO: 
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#postback-buttons-in-messaging
 
@@ -312,11 +299,7 @@ public class ZendeskMessaging: NSObject {
     /// If clearing storage not intended to be performed during invalidation, it will be cleared when the end user logs out. 
     /// The default value of the parameter is set to false to keep the previous behaviour of the SDK. 
     /// It is important to remember that once the Zendesk SDK is invalidated no messages nor notifications will be received.
-    func invalidate() {
-        Zendesk.invalidate()
-       self.zendeskPlugin?.isInitialized = false
-       print("\(self.TAG) - invalidate")
-    }
+    /// TODO: 
 }
 
 extension NSError {

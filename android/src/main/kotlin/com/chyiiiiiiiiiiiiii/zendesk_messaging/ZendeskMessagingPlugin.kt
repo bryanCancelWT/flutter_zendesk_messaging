@@ -36,14 +36,6 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 }
                 zendeskMessaging.show()
             }
-            "isInitialized" -> {
-                result.success(isInitialized)
-                return
-            }
-            "isLoggedIn" -> {
-                result.success(isLoggedIn)
-                return
-            }
             "loginUser" -> {
                 if (!isInitialized) {
                     println("$tag - Messaging needs to be initialized first")
@@ -68,72 +60,6 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     return
                 }
                 zendeskMessaging.logoutUser()
-            }
-            "getUnreadMessageCount" -> {
-                if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
-                    return
-                }
-                zendeskMessaging.getUnreadMessageCount()
-            }
-            "setConversationTags" -> {
-                if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
-                    return
-                }
-
-                try {
-                    val tags = call.argument<List<String>>("tags")
-                    if (tags == null) {
-                        throw Exception("tags is empty or null")
-                    }
-
-                    zendeskMessaging.setConversationTags(tags)
-                } catch (err: Throwable) {
-                    println("$tag - Messaging::setConversationTags invalid arguments. {'tags': '<your_tags>'} expected !")
-                    println(err.message)
-                    return
-                }
-            }
-            "clearConversationTags" -> {
-                if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
-                    return
-                }
-                zendeskMessaging.clearConversationTags()
-            }
-            "setConversationFields" -> {
-                if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
-                    return
-                }
-
-                try {
-                    val fields = call.argument<Map<String, String>>("fields")
-                    if (fields == null) {
-                        throw Exception("fields is empty or null")
-                    }
-
-                    zendeskMessaging.setConversationFields(fields)
-                } catch (err: Throwable) {
-                    println("$tag - Messaging::setConversationFields invalid arguments. {'fields': Map<String, String>}. expected !")
-                    println(err.message)
-                    return
-                }
-            }
-            "clearConversationFields" -> {
-                if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
-                    return
-                }
-                zendeskMessaging.clearConversationFields()
-            }
-            "invalidate" -> {
-                if (!isInitialized) {
-                    println("$tag - Messaging is already on an invalid state")
-                    return
-                }
-                zendeskMessaging.invalidate()
             }
             else -> {
                 result.notImplemented()
@@ -171,5 +97,4 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onDetachedFromActivity() {
         activity = null
     }
-
 }

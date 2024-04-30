@@ -118,27 +118,10 @@ abstract class ZendeskApi {
   void startInitialize(String channelKey);
   void startLoginUser(String jwt);
   void startLogoutUser();
-  void startGetUnreadMessageCount();
 
   /// this goes pretty much only one way - return an error or don't
   @async
-  ZendeskError? invalidate();
-  @async
   ZendeskError? show();
-  @async
-  ZendeskError? setConversationTags(List<String> tags);
-  @async
-  ZendeskError? clearConversationTags();
-  @async
-  ZendeskError? setConversationFields(Map<String, String> fields);
-  @async
-  ZendeskError? clearConversationFields();
-
-  /// easy
-  @async
-  bool isInitialized();
-  @async
-  bool isLoggedIn();
 }
 
 @FlutterApi()
@@ -154,8 +137,4 @@ abstract class ZendeskCallbacks {
   /// complete [ZendeskApi.startLogoutUser]
   void logoutUserSuccess();
   void logoutUserError(ZendeskError error);
-
-  /// complete [ZendeskApi.startGetUnreadMessageCount]
-  void getUnreadMessageCountSuccess(int count);
-  void getUnreadMessageCountError(ZendeskError error);
 }
