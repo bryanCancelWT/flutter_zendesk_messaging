@@ -41,6 +41,8 @@ enum ZendeskMessagingMessageType {
   loginFailure,
   logoutSuccess,
   logoutFailure,
+  getUnreadMessageCountSuccess,
+  getUnreadMessageCountFailure,
 }
 
 class ZendeskServiceChannel implements ZendeskService {
@@ -219,6 +221,39 @@ class ZendeskServiceChannel implements ZendeskService {
 
     ZendeskError? result = await completer.future;
     return result != null ? Failure(result) : null;
+  }
+
+  ///
+  ///
+  ///
+  /// Get Unread Message Count
+  ///
+  ///
+  ///
+  @override
+  Future<Result<int, Failure>> getUnreadMessageCount() async {
+    Completer<Result<int, Failure>> completer =
+        Completer<Result<int, Failure>>();
+
+    try {
+      _setObserver(ZendeskMessagingMessageType.getUnreadMessageCountSuccess,
+          (Map? args) {
+        completer.complete(Result<int, Failure>.success(args?['result'] ?? 0));
+      });
+
+      _setObserver(ZendeskMessagingMessageType.getUnreadMessageCountFailure,
+          (Map? args) {
+        completer.complete(Result<int, Failure>.error(
+          Failure(ZendeskErrorExtn.fromArgs(args)),
+        ));
+      });
+
+      await _channel.invokeMethod('getUnreadMessageCount');
+    } on PlatformException catch (e, s) {
+      return Result<int, Failure>.error(Failure(e, s));
+    }
+
+    return await completer.future;
   }
 
   ///

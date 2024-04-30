@@ -118,6 +118,7 @@ abstract class ZendeskApi {
   void startInitialize(String channelKey);
   void startLoginUser(String jwt);
   void startLogoutUser();
+  void startGetUnreadMessageCount();
 
   /// this goes pretty much only one way - return an error or don't
   @async
@@ -137,4 +138,8 @@ abstract class ZendeskCallbacks {
   /// complete [ZendeskApi.startLogoutUser]
   void logoutUserSuccess();
   void logoutUserError(ZendeskError error);
+
+  /// complete [ZendeskApi.startGetUnreadMessageCount]
+  void getUnreadMessageCountSuccess(int count);
+  void getUnreadMessageCountError(ZendeskError error);
 }

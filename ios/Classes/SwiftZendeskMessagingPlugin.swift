@@ -35,6 +35,9 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                  result(nil) 
             case "show":
                 result(zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController))
+            case "getUnreadMessageCount":
+                zendeskMessaging.getUnreadMessageCount()
+                break
             case "loginUser":
                 zendeskMessaging.loginUser(jwt: arguments?["jwt"] as? String)
                  result(nil) 

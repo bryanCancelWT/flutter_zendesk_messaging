@@ -140,6 +140,45 @@ class ZendeskServicePigeon implements ZendeskService, ZendeskCallbacks {
   ///
   ///
   ///
+  /// Get Unread Message Count
+  ///
+  ///
+  ///
+  static Completer<Result<int, ZendeskError>>? getUnreadMessageCountCompleter;
+
+  @override
+  Future<Result<int, Failure>> getUnreadMessageCount() async {
+    try {
+      await zendeskApi.startGetUnreadMessageCount();
+    } on PlatformException catch (e, s) {
+      return Result<int, Failure>.error(Failure(e, s));
+    }
+
+    getUnreadMessageCountCompleter = Completer<Result<int, ZendeskError>>();
+
+    return (await getUnreadMessageCountCompleter!.future).when(
+      (success) => Result<int, Failure>.success(success),
+      (error) => Result<int, Failure>.error(Failure(error)),
+    );
+  }
+
+  @override
+  getUnreadMessageCountSuccess(int count) {
+    getUnreadMessageCountCompleter!.complete(
+      Result<int, ZendeskError>.success(count),
+    );
+  }
+
+  @override
+  getUnreadMessageCountError(ZendeskError zendeskError) {
+    getUnreadMessageCountCompleter!.complete(
+      Result<int, ZendeskError>.error(zendeskError),
+    );
+  }
+
+  ///
+  ///
+  ///
   /// No Completers
   /// - can only return a failure from native
   ///

@@ -12,6 +12,8 @@ public class ZendeskMessaging: NSObject {
     private static var loginFailure: String = "login_failure"
     private static var logoutSuccess: String = "logout_success"
     private static var logoutFailure: String = "logout_failure"
+    private static var  getUnreadMessageCountSuccess: String = "get_unread_message_count_success"
+    private static var  getUnreadMessageCountFailure: String = "get_unread_message_count_failure"
 
     /// non os errors
     private static var alreadyInitialized: String = "alreadyInitialized"
@@ -117,7 +119,14 @@ public class ZendeskMessaging: NSObject {
     /// In addition, you can retrieve the current total number of unread messages by calling getUnreadMessageCount() on Messaging on your Zendesk SDK instance.
     ///
     /// You can find a demo app showcasing this feature in our Zendesk SDK Demo app github.
-    /// TODO:
+    func getUnreadMessageCount() {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            self.channel?.invokeMethod(ZendeskMessaging.getUnreadMessageCountFailure, arguments: ["nonOSError": ZendeskMessaging.notInitialized])
+        }
+
+        let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
+        self.channel?.invokeMethod(ZendeskMessaging.getUnreadMessageCountSuccess, arguments: ["result": count ?? 0])
+     }
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clickable-links-delegate
 

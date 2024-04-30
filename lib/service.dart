@@ -14,6 +14,7 @@ abstract class ZendeskService {
   Future<Failure?> initializeZendesk(String channelKey);
   Future<Result<ZendeskUser, Failure>> loginUser(String jwt);
   Future<Failure?> logoutUser();
+  Future<Result<int, Failure>> getUnreadMessageCount();
 
   /// No Completers
   /// - can only return a failure from native
@@ -58,6 +59,10 @@ class ZendeskMessaging {
 
   static Future<Failure?> show() async {
     return await zendeskService!.show();
+  }
+
+  static Future<Result<int, Failure>> getUnreadMessageCount() async {
+    return await zendeskService!.getUnreadMessageCount();
   }
 }
 

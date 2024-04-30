@@ -203,6 +203,7 @@ interface ZendeskApi {
   fun startInitialize(channelKey: String)
   fun startLoginUser(jwt: String)
   fun startLogoutUser()
+  fun startGetUnreadMessageCount()
   /** this goes pretty much only one way - return an error or don't */
   fun show(callback: (Result<ZendeskError?>) -> Unit)
 
@@ -259,6 +260,23 @@ interface ZendeskApi {
             var wrapped: List<Any?>
             try {
               api.startLogoutUser()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startGetUnreadMessageCount", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              api.startGetUnreadMessageCount()
               wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
@@ -417,6 +435,39 @@ class ZendeskCallbacks(private val binaryMessenger: BinaryMessenger) {
   fun logoutUserError(errorArg: ZendeskError, callback: (Result<Unit>) -> Unit)
 {
     val channelName = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.logoutUserError"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(errorArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+  /** complete [ZendeskApi.startGetUnreadMessageCount] */
+  fun getUnreadMessageCountSuccess(countArg: Long, callback: (Result<Unit>) -> Unit)
+{
+    val channelName = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountSuccess"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(countArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+  fun getUnreadMessageCountError(errorArg: ZendeskError, callback: (Result<Unit>) -> Unit)
+{
+    val channelName = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountError"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
     channel.send(listOf(errorArg)) {
       if (it is List<*>) {

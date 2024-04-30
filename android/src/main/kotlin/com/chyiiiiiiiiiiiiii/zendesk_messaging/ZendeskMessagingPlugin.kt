@@ -30,6 +30,9 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "show" -> {
                 result.success(zendeskMessaging.show());
             }
+            "getUnreadMessageCount" -> {
+                zendeskMessaging.getUnreadMessageCount()
+            }
             "loginUser" -> {
                 zendeskMessaging.loginUser(call.argument<String>("jwt"))
             }
