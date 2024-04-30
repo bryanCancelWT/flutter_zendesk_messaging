@@ -24,13 +24,8 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
         val sendData: Any? = call.arguments
         val zendeskMessaging = ZendeskMessaging(this, channel)
-
         when (call.method) {
             "initialize" -> {
-                if (isInitialized) {
-                    println("$tag - Messaging is already initialized!")
-                    return
-                }
                 val channelKey = call.argument<String>("channelKey")!!
                 zendeskMessaging.initialize(channelKey)
             }

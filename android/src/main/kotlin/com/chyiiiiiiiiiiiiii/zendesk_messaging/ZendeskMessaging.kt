@@ -33,23 +33,26 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     ///
     /// The snippets below give an example of a Messaging initialization in both Kotlin and Java.
     fun initialize(channelKey: String) {
-        println("$tag - Channel Key - $channelKey")
+        if (plugin.isInitialized) {
+            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to "already initialized"))
+            return
+        }
+     
         Zendesk.initialize(
             plugin.activity!!,
             channelKey,
             successCallback = { value ->
-                plugin.isInitialized = true;
-                println("$tag - initialize success - $value")
+                plugin.isInitialized = true
                 channel.invokeMethod(initializeSuccess, null)
             },
             failureCallback = { error ->
-                plugin.isInitialized = false;
-                println("$tag - initialize failure - $error")
-                channel.invokeMethod(initializeFailure, mapOf("error" to error.message))
+                plugin.isInitialized = false
+                channel.invokeMethod(initializeFailure, error.zendeskError)
             },
-            messagingFactory = DefaultMessagingFactory()
+            messagingFactory = DefaultMessagingFactory(),
         )
     }
+
 
     /// Show the conversation
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/getting_started/#show-the-conversation
@@ -271,3 +274,9 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         println("$tag - invalidated")
     }
 }
+
+val Throwable.zendeskError: Map<String, String>
+    get() = mapOf(
+        "messageAndroid" to this.message.orEmpty(),
+        "toStringAndroid" to this.toString()
+    )

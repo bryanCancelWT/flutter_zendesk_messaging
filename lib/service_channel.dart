@@ -10,17 +10,16 @@ import 'package:zendesk_messaging/zendesk_pigeon.dart';
 extension ZendeskErrorExtn on ZendeskError {
   static ZendeskError fromArgs(Map? args) {
     return ZendeskError(
+      /// android
       messageAndroid: args?["messageAndroid"],
       toStringAndroid: args?["toStringAndroid"],
+
+      /// iOS
       codeIOS: args?["codeIOS"],
       domainIOS: args?["domainIOS"],
-
-      /// TODO
-      userInfoIOS: null,
+      userInfoIOS: args?["userInfoIOS"],
       localizedDescriptionIOS: args?["localizedDescriptionIOS"],
-
-      /// TODO
-      localizedRecoveryOptionsIOS: null,
+      localizedRecoveryOptionsIOS: args?["localizedRecoveryOptionsIOS"],
       localizedRecoverySuggestionIOS: args?["localizedRecoverySuggestionIOS"],
       localizedFailureReasonIOS: args?["localizedFailureReasonIOS"],
 
@@ -139,14 +138,24 @@ class ZendeskServiceChannel implements ZendeskService {
 
   @override
   Future<Failure?> initializeZendesk(String channelKey) async {
+    Completer<ZendeskError?> completer = Completer<ZendeskError?>();
+
     try {
+      _setObserver(ZendeskMessagingMessageType.initializeSuccess, (Map? args) {
+        completer.complete(null);
+      });
+
+      _setObserver(ZendeskMessagingMessageType.initializeFailure, (Map? args) {
+        completer.complete(ZendeskErrorExtn.fromArgs(args));
+      });
+
       await _channel.invokeMethod('initialize', {'channelKey': channelKey});
     } on PlatformException catch (e, s) {
       return Failure(e, s);
     }
 
-    /// TODO: at some point we really should get errors from native code here
-    return null;
+    ZendeskError? result = await completer.future;
+    return result != null ? Failure(result) : null;
   }
 
   ///
