@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:multiple_result/multiple_result.dart';
 import 'package:zendesk_messaging/failure.dart';
@@ -42,6 +41,8 @@ enum ZendeskMessagingMessageType {
   loginFailure,
   logoutSuccess,
   logoutFailure,
+  getUnreadMessageCountSuccess,
+  getUnreadMessageCountFailure,
 }
 
 class ZendeskServiceChannel implements ZendeskService {
@@ -232,13 +233,28 @@ class ZendeskServiceChannel implements ZendeskService {
 
   @override
   Future<Result<int, Failure>> getUnreadMessageCount() async {
+    Completer<Result<int, Failure>> completer =
+        Completer<Result<int, Failure>>();
+
     try {
-      int result = await _channel.invokeMethod('getUnreadMessageCount');
-      return Result<int, Failure>.success(result);
+      _setObserver(ZendeskMessagingMessageType.getUnreadMessageCountSuccess,
+          (Map? args) {
+        completer.complete(Result<int, Failure>.success(args?['result'] ?? 0));
+      });
+
+      _setObserver(ZendeskMessagingMessageType.getUnreadMessageCountFailure,
+          (Map? args) {
+        completer.complete(Result<int, Failure>.error(
+          Failure(ZendeskErrorExtn.fromArgs(args)),
+        ));
+      });
+
+      await _channel.invokeMethod('getUnreadMessageCount');
     } on PlatformException catch (e, s) {
-      debugPrint('ZendeskMessaging - count - Error: $e}');
       return Result<int, Failure>.error(Failure(e, s));
     }
+
+    return await completer.future;
   }
 
   ///

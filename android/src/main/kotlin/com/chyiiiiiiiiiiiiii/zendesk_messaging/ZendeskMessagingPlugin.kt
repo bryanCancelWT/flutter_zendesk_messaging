@@ -74,7 +74,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     println("$tag - Messaging needs to be initialized first")
                     return
                 }
-                result.success(zendeskMessaging.getUnreadMessageCount())
+                zendeskMessaging.getUnreadMessageCount()
             }
             "setConversationTags" -> {
                 if (!isInitialized) {

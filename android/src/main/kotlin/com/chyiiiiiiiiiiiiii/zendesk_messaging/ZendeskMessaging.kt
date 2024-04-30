@@ -9,18 +9,24 @@ import zendesk.android.ZendeskResult
 import zendesk.android.ZendeskUser
 import zendesk.messaging.android.DefaultMessagingFactory
 
-
 class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val channel: MethodChannel) {
     companion object {
         const val tag = "[ZendeskMessaging]"
 
-        // Method channel callback keys
+        /// Method channel callback keys
         const val initializeSuccess: String = "initialize_success"
         const val initializeFailure: String = "initialize_failure"
         const val loginSuccess: String = "login_success"
         const val loginFailure: String = "login_failure"
         const val logoutSuccess: String = "logout_success"
         const val logoutFailure: String = "logout_failure"
+        const val getUnreadMessageCountSuccess: String = "get_unread_message_count_success"
+        const val getUnreadMessageCountFailure: String = "get_unread_message_count_failure"
+
+        /// non os errors
+        const val alreadyInitialized: String = "already initialized"
+        const val notInitialized: String = "not initialized"
+        const val failedToLogout: String = "failed to logout"
     }
     
     fun _errorToMap(error: Any): Map<String, String> {
@@ -40,9 +46,11 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// If you don't have admin access to Zendesk, ask a Zendesk admin to get the information for you.
     ///
     /// The snippets below give an example of a Messaging initialization in both Kotlin and Java.
+
+    /// TODO: isInitialized check - try catch wrap
     fun initialize(channelKey: String) {
         if (plugin.isInitialized) {
-            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to "already initialized"))
+            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to alreadyInitialized))
             return
         }
      
@@ -82,11 +90,16 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// In addition, you can retrieve the current total number of unread messages by calling getUnreadMessageCount() on Messaging on your Zendesk SDK instance.
     /// 
     /// You can find a demo app showcasing this feature in our Zendesk SDK Demo app github.
-    fun getUnreadMessageCount(): Int {
-        return try {
-            Zendesk.instance.messaging.getUnreadMessageCount()
+    fun getUnreadMessageCount() {
+        if(plugin.isInitialized == false) {
+            channel.invokeMethod(getUnreadMessageCountFailure, mapOf("nonOSError" to notInitialized))
+            return
+        }
+
+        try {
+            channel.invokeMethod(getUnreadMessageCountSuccess, mapOf("result" to Zendesk.instance.messaging.getUnreadMessageCount()))
         }catch (error: Throwable){
-            0
+            channel.invokeMethod(getUnreadMessageCountFailure, mapOf(_errorToMap(error)))
         }
     }
 
@@ -133,6 +146,11 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     ///
     /// To authenticate a user call the loginUser API with your own JWT. You can create your own JWT following our Creating a JWT token section.
     fun loginUser(jwt: String) {
+        if(plugin.isInitialized == false) {
+            channel.invokeMethod(loginFailure, mapOf("nonOSError" to notInitialized))
+            return
+        }
+
         Zendesk.instance.loginUser(
             jwt,
             { value: ZendeskUser? ->
@@ -144,9 +162,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
                 }
             },
             { error: Throwable? ->
-                println("$tag - Login failure : ${error?.message}")
-                println(error)
-                channel.invokeMethod(loginFailure, mapOf("error" to error?.message))
+                channel.invokeMethod(loginFailure, _errorToMap(error))
             })
     }
 
@@ -160,17 +176,21 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// Please note that there is no way for us to recover this data, so only use this for testing purposes. 
     /// The next time the unauthenticated user enters the conversation screen a new user and conversation will be created for them.
     fun logoutUser() {
+        if(plugin.isInitialized == false) {
+            channel.invokeMethod(logoutFailure, mapOf("nonOSError" to notInitialized))
+            return
+        }
+
         GlobalScope.launch (Dispatchers.Main)  {
             try {
                 Zendesk.instance.logoutUser(successCallback = {
                     plugin.isLoggedIn = false;
                     channel.invokeMethod(logoutSuccess, null)
                 }, failureCallback = {
-                    channel.invokeMethod(logoutFailure, null)
+                    channel.invokeMethod(logoutFailure, mapOf("nonOSError" to failedToLogout))
                 });
             } catch (error: Throwable) {
-                println("$tag - Logout failure : ${error.message}")
-                channel.invokeMethod(logoutFailure, mapOf("error" to error.message))
+                channel.invokeMethod(logoutFailure, mapOf("nonOSError" to failedToLogout))
             }
         }
     }
