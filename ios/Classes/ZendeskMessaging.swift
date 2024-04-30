@@ -29,7 +29,6 @@ public class ZendeskMessaging: NSObject {
         }
     }
 
-
     /// Initialize
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/getting_started/#initialize-the-sdk
     /// 

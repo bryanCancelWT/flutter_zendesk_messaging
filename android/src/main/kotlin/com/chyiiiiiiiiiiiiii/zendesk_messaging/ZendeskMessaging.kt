@@ -22,6 +22,14 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val logoutSuccess: String = "logout_success"
         const val logoutFailure: String = "logout_failure"
     }
+    
+    fun _errorToMap(error: Any): Map<String, String> {
+        return if (error is Throwable) {
+            error.zendeskError
+        } else {
+            mapOf("nonOSError" to "Unknown error type - $error")
+        }
+    }
 
     /// Initialize
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/getting_started/#initialize-the-sdk
@@ -47,7 +55,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             },
             failureCallback = { error ->
                 plugin.isInitialized = false
-                channel.invokeMethod(initializeFailure, error.zendeskError)
+                channel.invokeMethod(initializeFailure, _errorToMap(error))
             },
             messagingFactory = DefaultMessagingFactory(),
         )
