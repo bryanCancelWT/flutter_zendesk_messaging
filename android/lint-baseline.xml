@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.1.1" type="baseline" client="gradle" dependencies="false" name="AGP (8.1.1)" variant="all" version="8.1.1">
+
+    <issue
+        id="KotlinNullnessAnnotation"
+        message="Do not use `@NonNull` in Kotlin; the nullability is already implied by the Kotlin type `MethodCall` **not** ending with `?`"
+        errorLine1="    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {"
+        errorLine2="                              ~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/chyiiiiiiiiiiiiii/zendesk_messaging/ZendeskMessagingPlugin.kt"
+            line="24"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="KotlinNullnessAnnotation"
+        message="Do not use `@NonNull` in Kotlin; the nullability is already implied by the Kotlin type `MethodChannel.Result` **not** ending with `?`"
+        errorLine1="    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {"
+        errorLine2="                                                         ~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/chyiiiiiiiiiiiiii/zendesk_messaging/ZendeskMessagingPlugin.kt"
+            line="24"
+            column="58"/>
+    </issue>
+
+    <issue
+        id="KotlinNullnessAnnotation"
+        message="Do not use `@NonNull` in Kotlin; the nullability is already implied by the Kotlin type `FlutterPlugin.FlutterPluginBinding` **not** ending with `?`"
+        errorLine1="    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {"
+        errorLine2="                                    ~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/chyiiiiiiiiiiiiii/zendesk_messaging/ZendeskMessagingPlugin.kt"
+            line="150"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="KotlinNullnessAnnotation"
+        message="Do not use `@NonNull` in Kotlin; the nullability is already implied by the Kotlin type `FlutterPlugin.FlutterPluginBinding` **not** ending with `?`"
+        errorLine1="    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {"
+        errorLine2="                                      ~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/chyiiiiiiiiiiiiii/zendesk_messaging/ZendeskMessagingPlugin.kt"
+            line="155"
+            column="39"/>
+    </issue>
+
+</issues>

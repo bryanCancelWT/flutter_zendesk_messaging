@@ -13,6 +13,10 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+
     if (project.android.hasProperty('namespace')) {
         namespace 'com.chyiiiiiiiiiiiiii.zendesk_messaging'
     }
