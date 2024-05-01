@@ -29,6 +29,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val failedToLogout: String = "failedToLogout"
         const val noMessagingController: String = "noMessagingController"
         const val noRootController: String = "noRootController"
+        const val messagingIsNull: String = "messagingIsNull"
     }
     
     fun _errorToMap(error: Any?): Map<String, String> {

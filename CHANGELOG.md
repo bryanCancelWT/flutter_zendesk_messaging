@@ -1,3 +1,7 @@
+## 3.0.1
+
+* minor repairs
+
 ## 3.0.0
 
 * properly bubbling up all errors at all levels

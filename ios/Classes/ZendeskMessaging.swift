@@ -23,6 +23,7 @@ public class ZendeskMessaging: NSObject {
     private static var failedToLogout: String = "failedToLogout"
     private static var noMessagingController: String = "noMessagingController"
     private static var noRootController: String = "noRootController"
+    private static var messagingIsNull: String = "messagingIsNull"
     
     /// other
     private var zendeskPlugin: SwiftZendeskMessagingPlugin? = nil
@@ -133,10 +134,12 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        /// TODO: handle the edge case here
-        let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
+        if (Zendesk.instance?.messaging == nil) {
+            result(FlutterError(code: ZendeskMessaging.messagingIsNull, message: "", details: nil))
+            return
+        }
 
-        result(count ?? 0)
+        result(Zendesk.instance?.messaging?.getUnreadMessageCount() ?? 0)
      }
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clickable-links-delegate
@@ -290,8 +293,17 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        /// TODO: handle the edge case here
-        Zendesk.instance?.messaging?.setConversationFields(fields)
+        if(fields == nil){
+            result(FlutterError(code: ZendeskMessaging.invalidParameter, message: "", details: nil))
+            return
+        }
+
+        if (Zendesk.instance?.messaging == nil) {
+            result(FlutterError(code: ZendeskMessaging.messagingIsNull, message: "", details: nil))
+            return
+        }
+
+        Zendesk.instance?.messaging?.setConversationFields(fields!)
 
         result(nil)
     }
@@ -309,7 +321,11 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        /// TODO: handle the edge case here
+        if (Zendesk.instance?.messaging == nil) {
+            result(FlutterError(code: ZendeskMessaging.messagingIsNull, message: "", details: nil))
+            return
+        }
+
         Zendesk.instance?.messaging?.clearConversationFields()
 
         result(nil)
@@ -340,8 +356,17 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        /// TODO: handle the edge case here
-        Zendesk.instance?.messaging?.setConversationTags(tags)
+        if(tags == nil){
+            result(FlutterError(code: ZendeskMessaging.invalidParameter, message: "", details: nil))
+            return
+        }
+
+        if (Zendesk.instance?.messaging == nil) {
+            result(FlutterError(code: ZendeskMessaging.messagingIsNull, message: "", details: nil))
+            return
+        }
+
+        Zendesk.instance?.messaging?.setConversationTags(tags!)
 
         result(nil)
     }
@@ -359,7 +384,11 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        /// TODO: handle the edge case here
+        if (Zendesk.instance?.messaging == nil) {
+            result(FlutterError(code: ZendeskMessaging.messagingIsNull, message: "", details: nil))
+            return
+        }
+
         Zendesk.instance?.messaging?.clearConversationTags()
 
         result(nil)
