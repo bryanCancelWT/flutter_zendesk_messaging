@@ -50,6 +50,10 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 zendeskMessaging.clearConversationFields(result: result)
              case "invalidate":
                 zendeskMessaging.invalidate(result: result)
+            case "getIsInitialized":
+                zendeskMessaging.getIsInitialized(result: result)
+            case "getIsLoggedIn":
+                zendeskMessaging.getIsLoggedIn(result: result)
             default:
                 result(FlutterMethodNotImplemented)
         }

@@ -376,6 +376,24 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
 
         result.success(null)
     }
+
+    fun getIsInitialized(result: MethodChannel.Result) {
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        result.success(plugin.isInitialized == true)
+    }
+
+    fun getIsLoggedIn(result: MethodChannel.Result) {
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        result.success(plugin.isLoggedIn == true)
+    }
 }
 
 val Throwable.zendeskError: Map<String, String>

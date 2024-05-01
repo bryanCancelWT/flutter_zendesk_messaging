@@ -18,6 +18,8 @@ abstract class ZendeskService {
   Future<Failure?> setConversationFields(Map<String, String> fields);
   Future<Failure?> clearConversationFields();
   Future<Failure?> invalidate();
+  Future<Result<bool, Failure>> getIsInitialized();
+  Future<Result<bool, Failure>> getIsLoggedIn();
 }
 
 class ZendeskMessaging {
@@ -84,6 +86,14 @@ class ZendeskMessaging {
 
   static Future<Failure?> invalidate() async {
     return await zendeskService!.invalidate();
+  }
+
+  static Future<Result<bool, Failure>> getIsInitialized() async {
+    return await zendeskService!.getIsInitialized();
+  }
+
+  static Future<Result<bool, Failure>> getIsLoggedIn() async {
+    return await zendeskService!.getIsLoggedIn();
   }
 }
 

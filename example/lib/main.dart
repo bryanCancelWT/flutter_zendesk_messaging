@@ -24,7 +24,6 @@ class _MyAppState extends State<MyApp> {
 
   String? channelMessages;
   bool isLogin = false;
-  int unreadMessageCount = 0;
 
   @override
   void initState() {
@@ -64,8 +63,7 @@ class _MyAppState extends State<MyApp> {
                 if (isLogin) ...[
                   ElevatedButton(
                     onPressed: () => _getUnreadMessageCount(),
-                    child:
-                        Text('Get unread message count - $unreadMessageCount'),
+                    child: const Text('Get unread message count'),
                   ),
                 ],
                 ElevatedButton(
@@ -92,12 +90,14 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _clearTags(),
                   child: const Text("Clear tags"),
                 ),
-                /*
                 ElevatedButton(
-                  onPressed: () => _checkUserLoggedIn(),
-                  child: const Text("Check LoggedIn"),
+                  onPressed: () => _checkInitialized(),
+                  child: const Text("Check Initialized"),
                 ),
-                */
+                ElevatedButton(
+                  onPressed: () => _checkLoggedIn(),
+                  child: const Text("Check Logged In"),
+                ),
               ],
             ),
           ),
@@ -141,8 +141,7 @@ class _MyAppState extends State<MyApp> {
     if (mounted == false) return;
     setState(() {
       result.when((int success) {
-        channelMessages = "$success";
-        unreadMessageCount = success;
+        channelMessages = "unread message count : $success";
       }, (Failure failure) {
         channelMessages = _setFailure(failure);
       });
@@ -169,7 +168,6 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       if (failure == null) {
         channelMessages = "";
-        unreadMessageCount = 0;
         isLogin = false;
       } else {
         channelMessages = _setFailure(failure);
@@ -229,21 +227,28 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _checkUserLoggedIn() async {
-    /// TODO: eventually uncomment
-    /*
-    Result<bool, Failure> isLoggedIn = await ZendeskMessaging.isLoggedIn();
-    if (mounted) {
-      isLoggedIn.when(
-        (success) {
-          setState(() {
-            channelMessages.add('User is ${success ? '' : 'not'} logged in');
-          });
-        },
-        (error) {},
-      );
-    }
-    */
+  void _checkInitialized() async {
+    Result<bool, Failure> result = await ZendeskMessaging.getIsInitialized();
+    if (mounted == false) return;
+    setState(() {
+      result.when((bool success) {
+        channelMessages = "is initialized? $success";
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
+      });
+    });
+  }
+
+  void _checkLoggedIn() async {
+    Result<bool, Failure> result = await ZendeskMessaging.getIsLoggedIn();
+    if (mounted == false) return;
+    setState(() {
+      result.when((bool success) {
+        channelMessages = "is logged in? $success";
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
+      });
+    });
   }
 
   _setFailure(Failure failure) {

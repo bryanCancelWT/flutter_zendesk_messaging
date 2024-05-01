@@ -174,6 +174,8 @@ interface ZendeskApi {
   fun setConversationFields(fields: Map<String, String>)
   fun clearConversationFields()
   fun invalidate()
+  fun isInitialized(): Boolean
+  fun isLoggedIn(): Boolean
 
   companion object {
     /** The codec used by ZendeskApi. */
@@ -351,6 +353,38 @@ interface ZendeskApi {
             try {
               api.invalidate()
               wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isInitialized", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.isInitialized())
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isLoggedIn", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.isLoggedIn())
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
             }

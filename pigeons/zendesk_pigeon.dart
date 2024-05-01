@@ -1,6 +1,6 @@
 import 'package:pigeon/pigeon.dart';
 
-/// flutter pub run pigeon --input pigeons/zendesk_pigeon.dart
+/// dart run pigeon --input pigeons/zendesk_pigeon.dart
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/zendesk_pigeon.dart',
@@ -112,6 +112,8 @@ abstract class ZendeskApi {
   void setConversationFields(Map<String, String> fields);
   void clearConversationFields();
   void invalidate();
+  bool isInitialized();
+  bool isLoggedIn();
 }
 
 @FlutterApi()

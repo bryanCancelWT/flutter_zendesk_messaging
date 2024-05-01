@@ -54,6 +54,12 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "invalidate" -> {
                 zendeskMessaging.invalidate(result)
             }
+            "getIsInitialized" -> {
+                zendeskMessaging.getIsInitialized(result)
+            }
+            "getIsLoggedIn" -> {
+                zendeskMessaging.getIsLoggedIn(result)
+            }
             else -> {
                 result.notImplemented()
             }

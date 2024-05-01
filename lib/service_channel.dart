@@ -325,4 +325,26 @@ class ZendeskServiceChannel implements ZendeskService {
       return Failure(e, s);
     }
   }
+
+  @override
+  Future<Result<bool, Failure>> getIsInitialized() async {
+    try {
+      return Result<bool, Failure>.success(
+        await _channel.invokeMethod('getIsInitialized'),
+      );
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
+    }
+  }
+
+  @override
+  Future<Result<bool, Failure>> getIsLoggedIn() async {
+    try {
+      return Result<bool, Failure>.success(
+        await _channel.invokeMethod('getIsLoggedIn'),
+      );
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
+    }
+  }
 }

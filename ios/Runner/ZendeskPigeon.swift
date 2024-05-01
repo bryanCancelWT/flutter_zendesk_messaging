@@ -163,6 +163,8 @@ protocol ZendeskApi {
   func setConversationFields(fields: [String: String]) throws
   func clearConversationFields() throws
   func invalidate() throws
+  func isInitialized() throws -> Bool
+  func isLoggedIn() throws -> Bool
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -314,6 +316,32 @@ class ZendeskApiSetup {
       }
     } else {
       invalidateChannel.setMessageHandler(nil)
+    }
+    let isInitializedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isInitialized", binaryMessenger: binaryMessenger)
+    if let api = api {
+      isInitializedChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.isInitialized()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      isInitializedChannel.setMessageHandler(nil)
+    }
+    let isLoggedInChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isLoggedIn", binaryMessenger: binaryMessenger)
+    if let api = api {
+      isLoggedInChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.isLoggedIn()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      isLoggedInChannel.setMessageHandler(nil)
     }
   }
 }

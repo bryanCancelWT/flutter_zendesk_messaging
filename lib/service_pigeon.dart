@@ -231,4 +231,22 @@ class ZendeskServicePigeon implements ZendeskService, ZendeskCallbacks {
       return Failure(e, s);
     }
   }
+
+  @override
+  Future<Result<bool, Failure>> getIsInitialized() async {
+    try {
+      return Result<bool, Failure>.success(await zendeskApi.isInitialized());
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
+    }
+  }
+
+  @override
+  Future<Result<bool, Failure>> getIsLoggedIn() async {
+    try {
+      return Result<bool, Failure>.success(await zendeskApi.isLoggedIn());
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
+    }
+  }
 }
