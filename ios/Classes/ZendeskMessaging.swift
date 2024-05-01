@@ -341,13 +341,17 @@ public class ZendeskMessaging: NSObject {
 }
 
 extension NSError {
-    func _toStringString(input: [String: Any]) -> [String: String] {
+    func _toStringString(input: [String: Any]?) -> [String: String]? {
+        guard let input = input, !input.isEmpty else {
+            return nil
+        }
         var stringDictionary: [String: String] = [:]
         for (key, value) in input {
             stringDictionary[key] = String(describing: value)
         }
         return stringDictionary
     }
+
 
     var zendeskError: [String: Any] {
         return [

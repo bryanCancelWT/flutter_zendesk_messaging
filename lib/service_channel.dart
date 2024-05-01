@@ -16,12 +16,23 @@ extension ZendeskErrorExtn on ZendeskError {
       /// iOS
       codeIOS: args?["codeIOS"],
       domainIOS: args?["domainIOS"],
-      userInfoIOS: args?["userInfoIOS"],
+      userInfoIOS: (args?["userInfoIOS"] as Map?).pigeonMap,
       localizedDescriptionIOS: args?["localizedDescriptionIOS"],
       localizedRecoveryOptionsIOS: args?["localizedRecoveryOptionsIOS"],
       localizedRecoverySuggestionIOS: args?["localizedRecoverySuggestionIOS"],
       localizedFailureReasonIOS: args?["localizedFailureReasonIOS"],
     );
+  }
+}
+
+extension on Map<dynamic, dynamic>? {
+  Map<String?, String?>? get pigeonMap {
+    if (this == null) return null;
+    Map<String?, String?> outputMap = {};
+    this!.forEach((key, value) {
+      outputMap[key?.toString()] = value?.toString();
+    });
+    return outputMap;
   }
 }
 
