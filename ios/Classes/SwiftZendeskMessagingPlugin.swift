@@ -31,16 +31,29 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
 
         switch(method){
             case "initialize":
-                zendeskMessaging.initialize(channelKey: arguments?["channelKey"] as? String)
-                 result(nil) 
+                zendeskMessaging.initialize(result: result, channelKey: arguments?["channelKey"] as? String)
             case "show":
-                result(zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController))
+                zendeskMessaging.show(result: result, rootViewController: UIApplication.shared.delegate?.window??.rootViewController)
+            case "getUnreadMessageCount":
+                zendeskMessaging.getUnreadMessageCount(result: result)
             case "loginUser":
-                zendeskMessaging.loginUser(jwt: arguments?["jwt"] as? String)
-                 result(nil) 
+                zendeskMessaging.loginUser(result: result, jwt: arguments?["jwt"] as? String)
             case "logoutUser":
-                zendeskMessaging.logoutUser()
-                 result(nil) 
+                zendeskMessaging.logoutUser(result: result)
+            case "setConversationTags":
+                zendeskMessaging.setConversationTags(result: result, tags: arguments?["tags"] as? [String])
+             case "clearConversationTags":
+                zendeskMessaging.clearConversationTags(result: result)
+             case "setConversationFields":
+                zendeskMessaging.setConversationFields(result: result, fields: arguments?["fields"] as? [String: String])
+             case "clearConversationFields":
+                zendeskMessaging.clearConversationFields(result: result)
+             case "invalidate":
+                zendeskMessaging.invalidate(result: result)
+            case "getIsInitialized":
+                zendeskMessaging.getIsInitialized(result: result)
+            case "getIsLoggedIn":
+                zendeskMessaging.getIsLoggedIn(result: result)
             default:
                 result(FlutterMethodNotImplemented)
         }

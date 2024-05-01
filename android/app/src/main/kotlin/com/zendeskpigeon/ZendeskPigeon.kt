@@ -99,17 +99,7 @@ data class ZendeskError (
    * A string containing the localized explanation of the reason for the error.
    * - NULLABLE natively
    */
-  val localizedFailureReasonIOS: String? = null,
-  /**
-   *
-   *
-   *
-   * Other
-   *
-   *
-   *
-   */
-  val nonOSError: String? = null
+  val localizedFailureReasonIOS: String? = null
 
 ) {
   companion object {
@@ -124,8 +114,7 @@ data class ZendeskError (
       val localizedRecoveryOptionsIOS = list[6] as List<String?>?
       val localizedRecoverySuggestionIOS = list[7] as String?
       val localizedFailureReasonIOS = list[8] as String?
-      val nonOSError = list[9] as String?
-      return ZendeskError(messageAndroid, toStringAndroid, codeIOS, domainIOS, userInfoIOS, localizedDescriptionIOS, localizedRecoveryOptionsIOS, localizedRecoverySuggestionIOS, localizedFailureReasonIOS, nonOSError)
+      return ZendeskError(messageAndroid, toStringAndroid, codeIOS, domainIOS, userInfoIOS, localizedDescriptionIOS, localizedRecoveryOptionsIOS, localizedRecoverySuggestionIOS, localizedFailureReasonIOS)
     }
   }
   fun toList(): List<Any?> {
@@ -139,7 +128,6 @@ data class ZendeskError (
       localizedRecoveryOptionsIOS,
       localizedRecoverySuggestionIOS,
       localizedFailureReasonIOS,
-      nonOSError,
     )
   }
 }
@@ -165,30 +153,6 @@ data class ZendeskUser (
     )
   }
 }
-
-@Suppress("UNCHECKED_CAST")
-private object ZendeskApiCodec : StandardMessageCodec() {
-  override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
-    return when (type) {
-      128.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          ZendeskError.fromList(it)
-        }
-      }
-      else -> super.readValueOfType(type, buffer)
-    }
-  }
-  override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
-    when (value) {
-      is ZendeskError -> {
-        stream.write(128)
-        writeValue(stream, value.toList())
-      }
-      else -> super.writeValue(stream, value)
-    }
-  }
-}
-
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ZendeskApi {
   /**
@@ -201,15 +165,22 @@ interface ZendeskApi {
    *
    */
   fun startInitialize(channelKey: String)
+  fun show()
+  fun startGetUnreadMessageCount(): Long
   fun startLoginUser(jwt: String)
   fun startLogoutUser()
-  /** this goes pretty much only one way - return an error or don't */
-  fun show(callback: (Result<ZendeskError?>) -> Unit)
+  fun setConversationTags(tags: List<String>)
+  fun clearConversationTags()
+  fun setConversationFields(fields: Map<String, String>)
+  fun clearConversationFields()
+  fun invalidate()
+  fun isInitialized(): Boolean
+  fun isLoggedIn(): Boolean
 
   companion object {
     /** The codec used by ZendeskApi. */
     val codec: MessageCodec<Any?> by lazy {
-      ZendeskApiCodec
+      StandardMessageCodec()
     }
     /** Sets up an instance of `ZendeskApi` to handle messages through the `binaryMessenger`. */
     @Suppress("UNCHECKED_CAST")
@@ -224,6 +195,39 @@ interface ZendeskApi {
             try {
               api.startInitialize(channelKeyArg)
               wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.show", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              api.show()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startGetUnreadMessageCount", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.startGetUnreadMessageCount())
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
             }
@@ -270,18 +274,121 @@ interface ZendeskApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.show", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.setConversationTags", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val tagsArg = args[0] as List<String>
+            var wrapped: List<Any?>
+            try {
+              api.setConversationTags(tagsArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.clearConversationTags", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.show() { result: Result<ZendeskError?> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(wrapResult(data))
-              }
+            var wrapped: List<Any?>
+            try {
+              api.clearConversationTags()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
             }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.setConversationFields", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fieldsArg = args[0] as Map<String, String>
+            var wrapped: List<Any?>
+            try {
+              api.setConversationFields(fieldsArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.clearConversationFields", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              api.clearConversationFields()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.invalidate", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              api.invalidate()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isInitialized", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.isInitialized())
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.isLoggedIn", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.isLoggedIn())
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

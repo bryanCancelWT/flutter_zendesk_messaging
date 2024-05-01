@@ -67,6 +67,43 @@ class ZendeskServicePigeon implements ZendeskService, ZendeskCallbacks {
   ///
   ///
   ///
+  /// Show
+  ///
+  ///
+  ///
+
+  @override
+  Future<Failure?> show() async {
+    try {
+      await zendeskApi.show();
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  ///
+  ///
+  ///
+  /// Get Unread Message Count
+  ///
+  ///
+  ///
+
+  @override
+  Future<Result<int, Failure>> getUnreadMessageCount() async {
+    try {
+      return Result<int, Failure>.success(
+        await zendeskApi.startGetUnreadMessageCount(),
+      );
+    } on PlatformException catch (e, s) {
+      return Result<int, Failure>.error(Failure(e, s));
+    }
+  }
+
+  ///
+  ///
+  ///
   /// Login User
   ///
   ///
@@ -140,19 +177,76 @@ class ZendeskServicePigeon implements ZendeskService, ZendeskCallbacks {
   ///
   ///
   ///
-  /// No Completers
-  /// - can only return a failure from native
+  /// Other
   ///
   ///
   ///
 
   @override
-  Future<Failure?> show() async {
+  Future<Failure?> setConversationTags(List<String> tags) async {
     try {
-      ZendeskError? result = await zendeskApi.show();
-      return result != null ? Failure(result) : null;
+      await zendeskApi.setConversationTags(tags);
+      return null;
     } on PlatformException catch (e, s) {
       return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> clearConversationTags() async {
+    try {
+      await zendeskApi.clearConversationTags();
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> setConversationFields(Map<String, String> fields) async {
+    try {
+      await zendeskApi.setConversationFields(fields);
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> clearConversationFields() async {
+    try {
+      await zendeskApi.clearConversationFields();
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> invalidate() async {
+    try {
+      await zendeskApi.invalidate();
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Result<bool, Failure>> getIsInitialized() async {
+    try {
+      return Result<bool, Failure>.success(await zendeskApi.isInitialized());
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
+    }
+  }
+
+  @override
+  Future<Result<bool, Failure>> getIsLoggedIn() async {
+    try {
+      return Result<bool, Failure>.success(await zendeskApi.isLoggedIn());
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
     }
   }
 }

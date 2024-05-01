@@ -18,6 +18,8 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val loginFailure: String = "login_failure"
         const val logoutSuccess: String = "logout_success"
         const val logoutFailure: String = "logout_failure"
+        const val getUnreadMessageCountSuccess: String = "get_unread_message_count_success"
+        const val getUnreadMessageCountFailure: String = "get_unread_message_count_failure"
 
         /// non os errors
         const val alreadyInitialized: String = "alreadyInitialized"
@@ -25,6 +27,8 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val invalidParameter: String = "invalidParameter"
         const val nullActivity: String = "nullActivity"
         const val failedToLogout: String = "failedToLogout"
+        const val noMessagingController: String = "noMessagingController"
+        const val noRootController: String = "noRootController"
     }
     
     fun _errorToMap(error: Any?): Map<String, String> {
@@ -44,19 +48,19 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// If you don't have admin access to Zendesk, ask a Zendesk admin to get the information for you.
     ///
     /// The snippets below give an example of a Messaging initialization in both Kotlin and Java.
-    fun initialize(channelKey: String?) {
-        if (plugin.isInitialized) {
-            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to alreadyInitialized))
+    fun initialize(result: MethodChannel.Result, channelKey: String?) {
+        if (plugin.isInitialized == true) {
+            result.error(alreadyInitialized, "", null)
             return
         }
 
         if (channelKey.isNullOrEmpty()) {
-            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to invalidParameter))
+            result.error(invalidParameter, "", null)
             return
         }
 
         val activity = plugin.activity ?: run {
-            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to nullActivity))
+            result.error(nullActivity, "", null)
             return
         }
 
@@ -72,6 +76,8 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             },
             messagingFactory = DefaultMessagingFactory(),
         )
+
+        result.success(null)
     }
 
     /// Show the conversation
@@ -79,15 +85,20 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// 
     /// If Zendesk.initialize() is successful, you can use the code snippets below anywhere in your app to show the conversation screen.
     /// If Zendesk.initialize() is not successful, a stub implementation of the Zendesk class is returned that logs to the console.
-    fun show(): Map<String, Any?>? {
+    fun show(result: MethodChannel.Result) {
         if (plugin.isInitialized == false) {
-            return mapOf("nonOSError" to notInitialized)
+            result.error(notInitialized, "", null)
+            return
         }
 
-        val activity = plugin.activity ?: return mapOf("nonOSError" to nullActivity)
+        val activity = plugin.activity ?: run {
+            result.error(nullActivity, "", null)
+            return
+        }
 
         Zendesk.instance.messaging.showMessaging(activity, Intent.FLAG_ACTIVITY_NEW_TASK)
-        return null
+
+        result.success(null)
     }
 
 
@@ -101,7 +112,18 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// In addition, you can retrieve the current total number of unread messages by calling getUnreadMessageCount() on Messaging on your Zendesk SDK instance.
     /// 
     /// You can find a demo app showcasing this feature in our Zendesk SDK Demo app github.
-    /// TODO: 
+    fun getUnreadMessageCount(result: MethodChannel.Result) {
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        try {
+            result.success(Zendesk.instance.messaging.getUnreadMessageCount())
+        }catch (error: Throwable){
+            result.error(getUnreadMessageCountFailure, "", null)
+        }
+    }
 
     /// TODO: https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#clickable-links-delegate
     /// TODO: https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#events
@@ -145,14 +167,14 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#loginuser
     ///
     /// To authenticate a user call the loginUser API with your own JWT. You can create your own JWT following our Creating a JWT token section.
-    fun loginUser(jwt: String?) {
+    fun loginUser(result: MethodChannel.Result, jwt: String?) {
         if (plugin.isInitialized == false) {
-            channel.invokeMethod(loginFailure, mapOf("nonOSError" to notInitialized))
+            result.error(notInitialized, "", null)
             return
         }
 
         if (jwt.isNullOrEmpty()) {
-            channel.invokeMethod(loginFailure, mapOf("nonOSError" to invalidParameter))
+            result.error(invalidParameter, "", null)
             return
         }
 
@@ -169,6 +191,8 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             { error: Throwable? ->
                 channel.invokeMethod(loginFailure, _errorToMap(error))
             })
+    
+        result.success(null)
     }
 
     /// LogoutUser
@@ -180,9 +204,9 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// including their conversation history. 
     /// Please note that there is no way for us to recover this data, so only use this for testing purposes. 
     /// The next time the unauthenticated user enters the conversation screen a new user and conversation will be created for them.
-    fun logoutUser() {
+    fun logoutUser(result: MethodChannel.Result) {
         if(plugin.isInitialized == false) {
-            channel.invokeMethod(logoutFailure, mapOf("nonOSError" to notInitialized))
+            result.error(notInitialized, "", null)
             return
         }
 
@@ -191,13 +215,15 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
                 Zendesk.instance.logoutUser(successCallback = {
                     plugin.isLoggedIn = false
                     channel.invokeMethod(logoutSuccess, null)
-                }, failureCallback = {
-                    channel.invokeMethod(logoutFailure, mapOf("nonOSError" to failedToLogout))
+                }, failureCallback = { error ->
+                    channel.invokeMethod(logoutFailure, _errorToMap(error))
                 })
             } catch (error: Throwable) {
-                channel.invokeMethod(logoutFailure, mapOf("nonOSError" to _errorToMap(error)))
+                channel.invokeMethod(logoutFailure, _errorToMap(error))
             }
         }
+
+        result.success(null)
     }
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#visitor-path
@@ -242,7 +268,21 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// Any	value of custom ticket field
     /// 
     /// Note: Supported types for Any are string, number and boolean.
-    /// TODO: 
+    fun setConversationFields(result: MethodChannel.Result, fields: Map<String, String>?){
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        if (fields == null) {
+            result.error(invalidParameter, "", null)
+            return
+        }
+
+        Zendesk.instance.messaging.setConversationFields(fields)
+
+        result.success(null)
+    }
 
     /// Clear Conversation Fields
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#clear-conversation-fields
@@ -251,7 +291,16 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// To do this, use the clearConversationFields API. This removes all stored conversation fields from the SDK storage.
     ///
     /// Note: This API does not affect conversation fields already applied to the conversation.
-    /// TODO: 
+    fun clearConversationFields(result: MethodChannel.Result){
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        Zendesk.instance.messaging.clearConversationFields()
+
+        result.success(null)
+    }
 
     /// 
     ///
@@ -272,7 +321,21 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     ///
     /// Note: Conversation tags are not immediately associated with a conversation when the API is called. 
     /// It will only be applied to a conversation when end users either start a new conversation or send a new message in an existing conversation.
-    /// TODO: 
+    fun setConversationTags(result: MethodChannel.Result, tags: List<String>?){
+         if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        if (tags == null) {
+            result.error(invalidParameter, "", null)
+            return
+        }
+
+        Zendesk.instance.messaging.setConversationTags(tags)
+
+        result.success(null)
+    }
 
     /// Clear Conversation Tags
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#clear-conversation-tags
@@ -281,7 +344,16 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// To do this, use the clearConversationTags API. This removes all stored conversation tags from the SDK storage.
     ///
     /// Note: This API does not affect conversation tags already applied to the conversation.
-    /// TODO: 
+    fun clearConversationTags(result: MethodChannel.Result){
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        Zendesk.instance.messaging.clearConversationTags()
+
+        result.success(null)
+    }
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#postback-buttons-in-messaging
 
@@ -293,7 +365,30 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// This ensures that unused data does not accumulate over time, freeing up system resources. 
     /// When the end user logs out, the Zendesk SDK removes all user details from local storages and terminates the real-time connection. 
     /// Invalidating the Zendesk SDK instance means that no messages nor notifications will be received.
-    /// TODO: 
+    fun invalidate(result: MethodChannel.Result) {
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        Zendesk.invalidate()
+        plugin.isInitialized = false;
+
+        result.success(null)
+    }
+
+    fun getIsInitialized(result: MethodChannel.Result) {
+        result.success(plugin.isInitialized == true)
+    }
+
+    fun getIsLoggedIn(result: MethodChannel.Result) {
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        result.success(plugin.isLoggedIn == true)
+    }
 }
 
 val Throwable.zendeskError: Map<String, String>

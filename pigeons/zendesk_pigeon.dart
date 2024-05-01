@@ -1,6 +1,6 @@
 import 'package:pigeon/pigeon.dart';
 
-/// flutter pub run pigeon --input pigeons/zendesk_pigeon.dart
+/// dart run pigeon --input pigeons/zendesk_pigeon.dart
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/zendesk_pigeon.dart',
@@ -63,16 +63,6 @@ class ZendeskError {
   /// - NULLABLE natively
   final String? localizedFailureReasonIOS;
 
-  ///
-  ///
-  ///
-  /// Other
-  ///
-  ///
-  ///
-
-  final String? nonOSError;
-
   /// a combination of
   /// - https://developer.apple.com/documentation/foundation/nserror
   /// - https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/
@@ -89,9 +79,6 @@ class ZendeskError {
     this.localizedRecoveryOptionsIOS,
     this.localizedRecoverySuggestionIOS,
     this.localizedFailureReasonIOS,
-
-    /// other
-    this.nonOSError,
   });
 }
 
@@ -116,12 +103,17 @@ abstract class ZendeskApi {
   ///
 
   void startInitialize(String channelKey);
+  void show();
+  int startGetUnreadMessageCount();
   void startLoginUser(String jwt);
   void startLogoutUser();
-
-  /// this goes pretty much only one way - return an error or don't
-  @async
-  ZendeskError? show();
+  void setConversationTags(List<String> tags);
+  void clearConversationTags();
+  void setConversationFields(Map<String, String> fields);
+  void clearConversationFields();
+  void invalidate();
+  bool isInitialized();
+  bool isLoggedIn();
 }
 
 @FlutterApi()

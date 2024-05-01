@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:multiple_result/multiple_result.dart';
 import 'package:zendesk_messaging/failure.dart';
 import 'package:zendesk_messaging/service.dart';
 import 'package:zendesk_messaging/zendesk_pigeon.dart';
@@ -21,36 +22,22 @@ class _MyAppState extends State<MyApp> {
   static const String androidChannelKey = "your android key";
   static const String iosChannelKey = "your iOS key";
 
-  final List<String> channelMessages = [];
-
+  String? channelMessages;
   bool isLogin = false;
-  int unreadMessageCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // Optional, observe all incoming messages
-    ZendeskMessaging.setMessageHandler(
-      (type, arguments) {
-        setState(() {
-          channelMessages.add("$type - args=$arguments");
-        });
-      },
-      useChannelNotPigeon: useChannelNotPigeon,
-    );
   }
 
   @override
   void dispose() {
-    /// TODO: eventually uncomment
-    /// ZendeskMessaging.invalidate();
+    ZendeskMessaging.invalidate();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final message = channelMessages.join("\n");
-
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -61,39 +48,24 @@ class _MyAppState extends State<MyApp> {
             padding: const EdgeInsets.all(20),
             child: ListView(
               children: [
-                Text(message),
+                Text(channelMessages ?? "N/A"),
                 const SizedBox(
                   height: 20,
                 ),
                 ElevatedButton(
-                  onPressed: () => ZendeskMessaging.initialize(
-                    useChannelNotPigeon: useChannelNotPigeon,
-                    androidChannelKey: androidChannelKey,
-                    iosChannelKey: iosChannelKey,
-                  ),
+                  onPressed: () => _init(),
                   child: const Text("Initialize"),
                 ),
-                /*
+                ElevatedButton(
+                  onPressed: () => _show(),
+                  child: const Text("Show"),
+                ),
                 if (isLogin) ...[
                   ElevatedButton(
-                    onPressed: () => ZendeskMessaging.show(),
-                    child: const Text("Show messaging"),
-                  ),
-                  ElevatedButton(
                     onPressed: () => _getUnreadMessageCount(),
-                    child:
-                        Text('Get unread message count - $unreadMessageCount'),
+                    child: const Text('Get unread message count'),
                   ),
                 ],
-                ElevatedButton(
-                  onPressed: () => _setTags(),
-                  child: const Text("Add tags"),
-                ),
-                ElevatedButton(
-                  onPressed: () => _clearTags(),
-                  child: const Text("Clear tags"),
-                ),
-                */
                 ElevatedButton(
                   onPressed: () => _login(),
                   child: const Text("Login"),
@@ -101,11 +73,6 @@ class _MyAppState extends State<MyApp> {
                 ElevatedButton(
                   onPressed: () => _logout(),
                   child: const Text("Logout"),
-                ),
-                /*
-                ElevatedButton(
-                  onPressed: () => _checkUserLoggedIn(),
-                  child: const Text("Check LoggedIn"),
                 ),
                 ElevatedButton(
                   onPressed: () => _setFields(),
@@ -115,10 +82,21 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _clearFields(),
                   child: const Text("Clear Fields"),
                 ),
-                */
                 ElevatedButton(
-                  onPressed: () => _show(),
-                  child: const Text("Show"),
+                  onPressed: () => _setTags(),
+                  child: const Text("Add tags"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _clearTags(),
+                  child: const Text("Clear tags"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _checkInitialized(),
+                  child: const Text("Check Initialized"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _checkLoggedIn(),
+                  child: const Text("Check Logged In"),
                 ),
               ],
             ),
@@ -128,98 +106,154 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _login() {
-    // You can attach local observer when calling some methods to be notified when ready
-    ZendeskMessaging.loginUser("my_jwt");
-  }
+  void _init() async {
+    Failure? failure = await ZendeskMessaging.initialize(
+      useChannelNotPigeon: useChannelNotPigeon,
+      androidChannelKey: androidChannelKey,
+      iosChannelKey: iosChannelKey,
+    );
 
-  void _logout() {
-    ZendeskMessaging.logoutUser();
+    if (mounted == false) return;
     setState(() {
-      isLogin = false;
+      if (failure == null) {
+        channelMessages = null;
+      } else {
+        channelMessages = _setFailure(failure);
+      }
     });
-  }
-
-  void _getUnreadMessageCount() async {
-    /// TODO: eventually uncomment
-    /*
-    Result<int, Failure> messageCount =
-        await ZendeskMessaging.getUnreadMessageCount();
-    if (mounted) {
-      messageCount.when(
-        (success) {
-          setState(() {
-            unreadMessageCount = success;
-          });
-        },
-        (error) {},
-      );
-    }
-    */
-  }
-
-  void _setTags() async {
-    /// TODO: eventually uncomment
-    /*
-    final tags = ['tag1', 'tag2', 'tag3'];
-    await ZendeskMessaging.setConversationTags(tags);
-    */
-  }
-
-  void _clearTags() async {
-    /// TODO: eventually uncomment
-    /*
-    await ZendeskMessaging.clearConversationTags();
-    */
-  }
-
-  void _checkUserLoggedIn() async {
-    /// TODO: eventually uncomment
-    /*
-    Result<bool, Failure> isLoggedIn = await ZendeskMessaging.isLoggedIn();
-    if (mounted) {
-      isLoggedIn.when(
-        (success) {
-          setState(() {
-            channelMessages.add('User is ${success ? '' : 'not'} logged in');
-          });
-        },
-        (error) {},
-      );
-    }
-    */
-  }
-
-  void _setFields() async {
-    /// TODO: eventually uncomment
-    /*
-    Map<String, String> fieldsMap = {};
-
-    fieldsMap["field1"] = "Value 1";
-    fieldsMap["field2"] = "Value 2";
-
-    await ZendeskMessaging.setConversationFields(fieldsMap);
-    */
-  }
-
-  void _clearFields() async {
-    /// TODO: eventually uncomment
-    /*
-    await ZendeskMessaging.clearConversationFields();
-    */
   }
 
   void _show() async {
     Failure? failure = await ZendeskMessaging.show();
-    if (failure != null) {
-      setState(() {
-        if (failure.dataType == ZendeskError) {
-          channelMessages.add(
-              "show - ${jsonEncode((failure.data as ZendeskError).toJson())}");
-        } else {
-          channelMessages.add("show - $failure");
-        }
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
+  }
+
+  void _getUnreadMessageCount() async {
+    Result<int, Failure> result =
+        await ZendeskMessaging.getUnreadMessageCount();
+    if (mounted == false) return;
+    setState(() {
+      result.when((int success) {
+        channelMessages = "unread message count : $success";
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
       });
+    });
+  }
+
+  void _login() async {
+    Result<ZendeskUser, Failure> result =
+        await ZendeskMessaging.loginUser("my_jwt");
+    if (mounted == false) return;
+    setState(() {
+      result.when((ZendeskUser success) {
+        channelMessages = jsonEncode(success.toJson());
+        isLogin = true;
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
+      });
+    });
+  }
+
+  void _logout() async {
+    Failure? failure = await ZendeskMessaging.logoutUser();
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+        isLogin = false;
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
+  }
+
+  void _setFields() async {
+    Failure? failure =
+        await ZendeskMessaging.setConversationFields({"field1": "Value 1"});
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
+  }
+
+  void _clearFields() async {
+    Failure? failure = await ZendeskMessaging.clearConversationFields();
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
+  }
+
+  void _setTags() async {
+    List<String> tags = ['tag1', 'tag2', 'tag3'];
+    Failure? failure = await ZendeskMessaging.setConversationTags(tags);
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
+  }
+
+  void _clearTags() async {
+    Failure? failure = await ZendeskMessaging.clearConversationTags();
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
+  }
+
+  void _checkInitialized() async {
+    Result<bool, Failure> result = await ZendeskMessaging.getIsInitialized();
+    if (mounted == false) return;
+    setState(() {
+      result.when((bool success) {
+        channelMessages = "is initialized? $success";
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
+      });
+    });
+  }
+
+  void _checkLoggedIn() async {
+    Result<bool, Failure> result = await ZendeskMessaging.getIsLoggedIn();
+    if (mounted == false) return;
+    setState(() {
+      result.when((bool success) {
+        channelMessages = "is logged in? $success";
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
+      });
+    });
+  }
+
+  _setFailure(Failure failure) {
+    if (failure.dataType == ZendeskError) {
+      return jsonEncode((failure.data as ZendeskError).toJson());
+    } else {
+      return "$failure";
     }
   }
 }

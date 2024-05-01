@@ -25,16 +25,40 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         val zendeskMessaging = ZendeskMessaging(this, channel)
         when (call.method) {
             "initialize" -> {
-                zendeskMessaging.initialize(call.argument<String>("channelKey"))
+                zendeskMessaging.initialize(result, call.argument<String>("channelKey"))
             }
             "show" -> {
-                result.success(zendeskMessaging.show());
+                zendeskMessaging.show(result);
+            }
+            "getUnreadMessageCount" -> {
+                zendeskMessaging.getUnreadMessageCount(result)
             }
             "loginUser" -> {
-                zendeskMessaging.loginUser(call.argument<String>("jwt"))
+                zendeskMessaging.loginUser(result, call.argument<String>("jwt"))
             }
             "logoutUser" -> {
-                zendeskMessaging.logoutUser()
+                zendeskMessaging.logoutUser(result)
+            }
+            "setConversationTags" -> {
+                zendeskMessaging.setConversationTags(result, call.argument<List<String>>("tags"))
+            }
+            "clearConversationTags" -> {
+                zendeskMessaging.clearConversationTags(result)
+            }
+            "setConversationFields" -> {
+                zendeskMessaging.setConversationFields(result, call.argument<Map<String, String>>("fields"))
+            }
+            "clearConversationFields" -> {
+                zendeskMessaging.clearConversationFields(result)
+            }
+            "invalidate" -> {
+                zendeskMessaging.invalidate(result)
+            }
+            "getIsInitialized" -> {
+                zendeskMessaging.getIsInitialized(result)
+            }
+            "getIsLoggedIn" -> {
+                zendeskMessaging.getIsLoggedIn(result)
             }
             else -> {
                 result.notImplemented()

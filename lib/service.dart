@@ -7,17 +7,19 @@ import 'package:zendesk_messaging/service_pigeon.dart';
 import 'package:zendesk_messaging/zendesk_pigeon.dart';
 
 abstract class ZendeskService {
-  /// Seperate
   Future<Failure?> initializeService();
-
-  /// Completers
   Future<Failure?> initializeZendesk(String channelKey);
+  Future<Failure?> show();
+  Future<Result<int, Failure>> getUnreadMessageCount();
   Future<Result<ZendeskUser, Failure>> loginUser(String jwt);
   Future<Failure?> logoutUser();
-
-  /// No Completers
-  /// - can only return a failure from native
-  Future<Failure?> show();
+  Future<Failure?> setConversationTags(List<String> tags);
+  Future<Failure?> clearConversationTags();
+  Future<Failure?> setConversationFields(Map<String, String> fields);
+  Future<Failure?> clearConversationFields();
+  Future<Failure?> invalidate();
+  Future<Result<bool, Failure>> getIsInitialized();
+  Future<Result<bool, Failure>> getIsLoggedIn();
 }
 
 class ZendeskMessaging {
@@ -48,6 +50,14 @@ class ZendeskMessaging {
     );
   }
 
+  static Future<Failure?> show() async {
+    return await zendeskService!.show();
+  }
+
+  static Future<Result<int, Failure>> getUnreadMessageCount() async {
+    return await zendeskService!.getUnreadMessageCount();
+  }
+
   static Future<Result<ZendeskUser, Failure>> loginUser(String jwt) async {
     return await zendeskService!.loginUser(jwt);
   }
@@ -56,8 +66,34 @@ class ZendeskMessaging {
     return await zendeskService!.logoutUser();
   }
 
-  static Future<Failure?> show() async {
-    return await zendeskService!.show();
+  static Future<Failure?> setConversationTags(List<String> tags) async {
+    return await zendeskService!.setConversationTags(tags);
+  }
+
+  static Future<Failure?> clearConversationTags() async {
+    return await zendeskService!.clearConversationTags();
+  }
+
+  static Future<Failure?> setConversationFields(
+    Map<String, String> fields,
+  ) async {
+    return await zendeskService!.setConversationFields(fields);
+  }
+
+  static Future<Failure?> clearConversationFields() async {
+    return await zendeskService!.clearConversationFields();
+  }
+
+  static Future<Failure?> invalidate() async {
+    return await zendeskService!.invalidate();
+  }
+
+  static Future<Result<bool, Failure>> getIsInitialized() async {
+    return await zendeskService!.getIsInitialized();
+  }
+
+  static Future<Result<bool, Failure>> getIsLoggedIn() async {
+    return await zendeskService!.getIsLoggedIn();
   }
 }
 
@@ -95,7 +131,6 @@ extension ZendeskErrorExtensions on ZendeskError {
           localizedRecoveryOptionsIOS?.map((item) => item).toList(),
       'localizedRecoverySuggestionIOS': localizedRecoverySuggestionIOS,
       'localizedFailureReasonIOS': localizedFailureReasonIOS,
-      'nonOSError': nonOSError,
     };
   }
 
@@ -116,7 +151,6 @@ extension ZendeskErrorExtensions on ZendeskError {
       localizedRecoverySuggestionIOS:
           json['localizedRecoverySuggestionIOS'] as String?,
       localizedFailureReasonIOS: json['localizedFailureReasonIOS'] as String?,
-      nonOSError: json['nonOSError'] as String?,
     );
   }
 }

@@ -16,15 +16,23 @@ extension ZendeskErrorExtn on ZendeskError {
       /// iOS
       codeIOS: args?["codeIOS"],
       domainIOS: args?["domainIOS"],
-      userInfoIOS: args?["userInfoIOS"],
+      userInfoIOS: (args?["userInfoIOS"] as Map?).pigeonMap,
       localizedDescriptionIOS: args?["localizedDescriptionIOS"],
       localizedRecoveryOptionsIOS: args?["localizedRecoveryOptionsIOS"],
       localizedRecoverySuggestionIOS: args?["localizedRecoverySuggestionIOS"],
       localizedFailureReasonIOS: args?["localizedFailureReasonIOS"],
-
-      /// ! null since anything here is an OS error
-      nonOSError: args?["nonOSError"],
     );
+  }
+}
+
+extension on Map<dynamic, dynamic>? {
+  Map<String?, String?>? get pigeonMap {
+    if (this == null) return null;
+    Map<String?, String?> outputMap = {};
+    this!.forEach((key, value) {
+      outputMap[key?.toString()] = value?.toString();
+    });
+    return outputMap;
   }
 }
 
@@ -41,6 +49,8 @@ enum ZendeskMessagingMessageType {
   loginFailure,
   logoutSuccess,
   logoutFailure,
+  getUnreadMessageCountSuccess,
+  getUnreadMessageCountFailure,
 }
 
 class ZendeskServiceChannel implements ZendeskService {
@@ -160,6 +170,43 @@ class ZendeskServiceChannel implements ZendeskService {
   ///
   ///
   ///
+  /// Show
+  ///
+  ///
+  ///
+
+  @override
+  Future<Failure?> show() async {
+    try {
+      await _channel.invokeMethod('show');
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  ///
+  ///
+  ///
+  /// Get Unread Message Count
+  ///
+  ///
+  ///
+
+  @override
+  Future<Result<int, Failure>> getUnreadMessageCount() async {
+    try {
+      return Result<int, Failure>.success(
+        await _channel.invokeMethod('getUnreadMessageCount'),
+      );
+    } on PlatformException catch (e, s) {
+      return Result<int, Failure>.error(Failure(e, s));
+    }
+  }
+
+  ///
+  ///
+  ///
   /// Login User
   ///
   ///
@@ -224,20 +271,80 @@ class ZendeskServiceChannel implements ZendeskService {
   ///
   ///
   ///
-  /// No Completers Required
+  /// Other
   ///
   ///
   ///
 
   @override
-  Future<Failure?> show() async {
+  Future<Failure?> setConversationTags(List<String> tags) async {
     try {
-      dynamic result = await _channel.invokeMethod('show');
-      Failure? fail =
-          result != null ? Failure(ZendeskErrorExtn.fromArgs(result)) : null;
-      return fail;
+      await _channel.invokeMethod('setConversationTags', {'tags': tags});
+      return null;
     } on PlatformException catch (e, s) {
       return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> clearConversationTags() async {
+    try {
+      await _channel.invokeMethod('clearConversationTags');
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> setConversationFields(Map<String, String> fields) async {
+    try {
+      await _channel.invokeMethod('setConversationFields', {'fields': fields});
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> clearConversationFields() async {
+    try {
+      await _channel.invokeMethod('clearConversationFields');
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> invalidate() async {
+    try {
+      await _channel.invokeMethod('invalidate');
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Result<bool, Failure>> getIsInitialized() async {
+    try {
+      return Result<bool, Failure>.success(
+        await _channel.invokeMethod('getIsInitialized'),
+      );
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
+    }
+  }
+
+  @override
+  Future<Result<bool, Failure>> getIsLoggedIn() async {
+    try {
+      return Result<bool, Failure>.success(
+        await _channel.invokeMethod('getIsLoggedIn'),
+      );
+    } on PlatformException catch (e, s) {
+      return Result<bool, Failure>.error(Failure(e, s));
     }
   }
 }
