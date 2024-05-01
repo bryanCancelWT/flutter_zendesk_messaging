@@ -84,14 +84,6 @@ struct ZendeskError {
   /// A string containing the localized explanation of the reason for the error.
   /// - NULLABLE natively
   var localizedFailureReasonIOS: String? = nil
-  ///
-  ///
-  ///
-  /// Other
-  ///
-  ///
-  ///
-  var nonOSError: String? = nil
 
   static func fromList(_ list: [Any?]) -> ZendeskError? {
     let messageAndroid: String? = nilOrValue(list[0])
@@ -103,7 +95,6 @@ struct ZendeskError {
     let localizedRecoveryOptionsIOS: [String?]? = nilOrValue(list[6])
     let localizedRecoverySuggestionIOS: String? = nilOrValue(list[7])
     let localizedFailureReasonIOS: String? = nilOrValue(list[8])
-    let nonOSError: String? = nilOrValue(list[9])
 
     return ZendeskError(
       messageAndroid: messageAndroid,
@@ -114,8 +105,7 @@ struct ZendeskError {
       localizedDescriptionIOS: localizedDescriptionIOS,
       localizedRecoveryOptionsIOS: localizedRecoveryOptionsIOS,
       localizedRecoverySuggestionIOS: localizedRecoverySuggestionIOS,
-      localizedFailureReasonIOS: localizedFailureReasonIOS,
-      nonOSError: nonOSError
+      localizedFailureReasonIOS: localizedFailureReasonIOS
     )
   }
   func toList() -> [Any?] {
@@ -129,7 +119,6 @@ struct ZendeskError {
       localizedRecoveryOptionsIOS,
       localizedRecoverySuggestionIOS,
       localizedFailureReasonIOS,
-      nonOSError,
     ]
   }
 }
@@ -155,43 +144,6 @@ struct ZendeskUser {
     ]
   }
 }
-
-private class ZendeskApiCodecReader: FlutterStandardReader {
-  override func readValue(ofType type: UInt8) -> Any? {
-    switch type {
-    case 128:
-      return ZendeskError.fromList(self.readValue() as! [Any?])
-    default:
-      return super.readValue(ofType: type)
-    }
-  }
-}
-
-private class ZendeskApiCodecWriter: FlutterStandardWriter {
-  override func writeValue(_ value: Any) {
-    if let value = value as? ZendeskError {
-      super.writeByte(128)
-      super.writeValue(value.toList())
-    } else {
-      super.writeValue(value)
-    }
-  }
-}
-
-private class ZendeskApiCodecReaderWriter: FlutterStandardReaderWriter {
-  override func reader(with data: Data) -> FlutterStandardReader {
-    return ZendeskApiCodecReader(data: data)
-  }
-
-  override func writer(with data: NSMutableData) -> FlutterStandardWriter {
-    return ZendeskApiCodecWriter(data: data)
-  }
-}
-
-class ZendeskApiCodec: FlutterStandardMessageCodec {
-  static let shared = ZendeskApiCodec(readerWriter: ZendeskApiCodecReaderWriter())
-}
-
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ZendeskApi {
   ///
@@ -204,15 +156,13 @@ protocol ZendeskApi {
   func startInitialize(channelKey: String) throws
   func startLoginUser(jwt: String) throws
   func startLogoutUser() throws
-  func startGetUnreadMessageCount() throws
-  /// this goes pretty much only one way - return an error or don't
-  func show(completion: @escaping (Result<ZendeskError?, Error>) -> Void)
+  func startGetUnreadMessageCount() throws -> Int64
+  func show() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
 class ZendeskApiSetup {
   /// The codec used by ZendeskApi.
-  static var codec: FlutterStandardMessageCodec { ZendeskApiCodec.shared }
   /// Sets up an instance of `ZendeskApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: ZendeskApi?) {
     ///
@@ -222,7 +172,7 @@ class ZendeskApiSetup {
     ///
     ///
     ///
-    let startInitializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startInitialize", binaryMessenger: binaryMessenger, codec: codec)
+    let startInitializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startInitialize", binaryMessenger: binaryMessenger)
     if let api = api {
       startInitializeChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -237,7 +187,7 @@ class ZendeskApiSetup {
     } else {
       startInitializeChannel.setMessageHandler(nil)
     }
-    let startLoginUserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startLoginUser", binaryMessenger: binaryMessenger, codec: codec)
+    let startLoginUserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startLoginUser", binaryMessenger: binaryMessenger)
     if let api = api {
       startLoginUserChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -252,7 +202,7 @@ class ZendeskApiSetup {
     } else {
       startLoginUserChannel.setMessageHandler(nil)
     }
-    let startLogoutUserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startLogoutUser", binaryMessenger: binaryMessenger, codec: codec)
+    let startLogoutUserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startLogoutUser", binaryMessenger: binaryMessenger)
     if let api = api {
       startLogoutUserChannel.setMessageHandler { _, reply in
         do {
@@ -265,12 +215,12 @@ class ZendeskApiSetup {
     } else {
       startLogoutUserChannel.setMessageHandler(nil)
     }
-    let startGetUnreadMessageCountChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startGetUnreadMessageCount", binaryMessenger: binaryMessenger, codec: codec)
+    let startGetUnreadMessageCountChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.startGetUnreadMessageCount", binaryMessenger: binaryMessenger)
     if let api = api {
       startGetUnreadMessageCountChannel.setMessageHandler { _, reply in
         do {
-          try api.startGetUnreadMessageCount()
-          reply(wrapResult(nil))
+          let result = try api.startGetUnreadMessageCount()
+          reply(wrapResult(result))
         } catch {
           reply(wrapError(error))
         }
@@ -278,17 +228,14 @@ class ZendeskApiSetup {
     } else {
       startGetUnreadMessageCountChannel.setMessageHandler(nil)
     }
-    /// this goes pretty much only one way - return an error or don't
-    let showChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.show", binaryMessenger: binaryMessenger, codec: codec)
+    let showChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskApi.show", binaryMessenger: binaryMessenger)
     if let api = api {
       showChannel.setMessageHandler { _, reply in
-        api.show { result in
-          switch result {
-          case .success(let res):
-            reply(wrapResult(res))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
+        do {
+          try api.show()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
         }
       }
     } else {
@@ -348,9 +295,6 @@ protocol ZendeskCallbacksProtocol {
   /// complete [ZendeskApi.startLogoutUser]
   func logoutUserSuccess(completion: @escaping (Result<Void, FlutterError>) -> Void)
   func logoutUserError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void)
-  /// complete [ZendeskApi.startGetUnreadMessageCount]
-  func getUnreadMessageCountSuccess(count countArg: Int64, completion: @escaping (Result<Void, FlutterError>) -> Void)
-  func getUnreadMessageCountError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void)
 }
 class ZendeskCallbacks: ZendeskCallbacksProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -455,43 +399,6 @@ class ZendeskCallbacks: ZendeskCallbacksProtocol {
   }
   func logoutUserError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.logoutUserError"
-    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage([errorArg] as [Any?]) { response in
-      guard let listResponse = response as? [Any?] else {
-        completion(.failure(createConnectionError(withChannelName: channelName)))
-        return
-      }
-      if listResponse.count > 1 {
-        let code: String = listResponse[0] as! String
-        let message: String? = nilOrValue(listResponse[1])
-        let details: String? = nilOrValue(listResponse[2])
-        completion(.failure(FlutterError(code: code, message: message, details: details)))
-      } else {
-        completion(.success(Void()))
-      }
-    }
-  }
-  /// complete [ZendeskApi.startGetUnreadMessageCount]
-  func getUnreadMessageCountSuccess(count countArg: Int64, completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountSuccess"
-    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage([countArg] as [Any?]) { response in
-      guard let listResponse = response as? [Any?] else {
-        completion(.failure(createConnectionError(withChannelName: channelName)))
-        return
-      }
-      if listResponse.count > 1 {
-        let code: String = listResponse[0] as! String
-        let message: String? = nilOrValue(listResponse[1])
-        let details: String? = nilOrValue(listResponse[2])
-        completion(.failure(FlutterError(code: code, message: message, details: details)))
-      } else {
-        completion(.success(Void()))
-      }
-    }
-  }
-  func getUnreadMessageCountError(error errorArg: ZendeskError, completion: @escaping (Result<Void, FlutterError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.com.zendeskpigeon.api.ZendeskCallbacks.getUnreadMessageCountError"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([errorArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {

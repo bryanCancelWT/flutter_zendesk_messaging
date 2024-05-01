@@ -31,19 +31,16 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
 
         switch(method){
             case "initialize":
-                zendeskMessaging.initialize(channelKey: arguments?["channelKey"] as? String)
-                 result(nil) 
+                zendeskMessaging.initialize(result: result, channelKey: arguments?["channelKey"] as? String)
             case "show":
-                result(zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController))
+                zendeskMessaging.show(result: result, rootViewController: UIApplication.shared.delegate?.window??.rootViewController))
             case "getUnreadMessageCount":
-                zendeskMessaging.getUnreadMessageCount()
+                zendeskMessaging.getUnreadMessageCount(result: result)
                 break
             case "loginUser":
-                zendeskMessaging.loginUser(jwt: arguments?["jwt"] as? String)
-                 result(nil) 
+                zendeskMessaging.loginUser(result: result, jwt: arguments?["jwt"] as? String)
             case "logoutUser":
-                zendeskMessaging.logoutUser()
-                 result(nil) 
+                zendeskMessaging.logoutUser(result: result)
             default:
                 result(FlutterMethodNotImplemented)
         }

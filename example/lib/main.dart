@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:multiple_result/multiple_result.dart';
 import 'package:zendesk_messaging/failure.dart';
 import 'package:zendesk_messaging/service.dart';
 import 'package:zendesk_messaging/zendesk_pigeon.dart';
@@ -21,23 +22,13 @@ class _MyAppState extends State<MyApp> {
   static const String androidChannelKey = "your android key";
   static const String iosChannelKey = "your iOS key";
 
-  final List<String> channelMessages = [];
-
+  String? channelMessages;
   bool isLogin = false;
   int unreadMessageCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // Optional, observe all incoming messages
-    ZendeskMessaging.setMessageHandler(
-      (type, arguments) {
-        setState(() {
-          channelMessages.add("$type - args=$arguments");
-        });
-      },
-      useChannelNotPigeon: useChannelNotPigeon,
-    );
   }
 
   @override
@@ -49,8 +40,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final message = channelMessages.join("\n");
-
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -61,30 +50,26 @@ class _MyAppState extends State<MyApp> {
             padding: const EdgeInsets.all(20),
             child: ListView(
               children: [
-                Text(message),
+                Text(channelMessages ?? "N/A"),
                 const SizedBox(
                   height: 20,
                 ),
                 ElevatedButton(
-                  onPressed: () => ZendeskMessaging.initialize(
-                    useChannelNotPigeon: useChannelNotPigeon,
-                    androidChannelKey: androidChannelKey,
-                    iosChannelKey: iosChannelKey,
-                  ),
+                  onPressed: () => _init(),
                   child: const Text("Initialize"),
                 ),
-                /*
+                ElevatedButton(
+                  onPressed: () => _show(),
+                  child: const Text("Show"),
+                ),
                 if (isLogin) ...[
-                  ElevatedButton(
-                    onPressed: () => ZendeskMessaging.show(),
-                    child: const Text("Show messaging"),
-                  ),
                   ElevatedButton(
                     onPressed: () => _getUnreadMessageCount(),
                     child:
                         Text('Get unread message count - $unreadMessageCount'),
                   ),
                 ],
+                /*
                 ElevatedButton(
                   onPressed: () => _setTags(),
                   child: const Text("Add tags"),
@@ -116,10 +101,6 @@ class _MyAppState extends State<MyApp> {
                   child: const Text("Clear Fields"),
                 ),
                 */
-                ElevatedButton(
-                  onPressed: () => _show(),
-                  child: const Text("Show"),
-                ),
               ],
             ),
           ),
@@ -128,34 +109,62 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _login() {
-    // You can attach local observer when calling some methods to be notified when ready
-    ZendeskMessaging.loginUser("my_jwt");
+  void _init() async {
+    Failure? failure = await ZendeskMessaging.initialize(
+      useChannelNotPigeon: useChannelNotPigeon,
+      androidChannelKey: androidChannelKey,
+      iosChannelKey: iosChannelKey,
+    );
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = null;
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
   }
 
-  void _logout() {
-    ZendeskMessaging.logoutUser();
+  void _login() async {
+    Result<ZendeskUser, Failure> result =
+        await ZendeskMessaging.loginUser("my_jwt");
+    if (mounted == false) return;
     setState(() {
-      isLogin = false;
+      result.when((ZendeskUser success) {
+        channelMessages = jsonEncode(success.toJson());
+        isLogin = true;
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
+      });
+    });
+  }
+
+  void _logout() async {
+    Failure? failure = await ZendeskMessaging.logoutUser();
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+        unreadMessageCount = 0;
+        isLogin = false;
+      } else {
+        channelMessages = _setFailure(failure);
+      }
     });
   }
 
   void _getUnreadMessageCount() async {
-    /// TODO: eventually uncomment
-    /*
-    Result<int, Failure> messageCount =
+    Result<int, Failure> result =
         await ZendeskMessaging.getUnreadMessageCount();
-    if (mounted) {
-      messageCount.when(
-        (success) {
-          setState(() {
-            unreadMessageCount = success;
-          });
-        },
-        (error) {},
-      );
-    }
-    */
+    if (mounted == false) return;
+    setState(() {
+      result.when((int success) {
+        channelMessages = "$success";
+        unreadMessageCount = success;
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
+      });
+    });
   }
 
   void _setTags() async {
@@ -211,15 +220,21 @@ class _MyAppState extends State<MyApp> {
 
   void _show() async {
     Failure? failure = await ZendeskMessaging.show();
-    if (failure != null) {
-      setState(() {
-        if (failure.dataType == ZendeskError) {
-          channelMessages.add(
-              "show - ${jsonEncode((failure.data as ZendeskError).toJson())}");
-        } else {
-          channelMessages.add("show - $failure");
-        }
-      });
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
+  }
+
+  _setFailure(Failure failure) {
+    if (failure.dataType == ZendeskError) {
+      return jsonEncode((failure.data as ZendeskError).toJson());
+    } else {
+      return "$failure";
     }
   }
 }

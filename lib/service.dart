@@ -100,7 +100,6 @@ extension ZendeskErrorExtensions on ZendeskError {
           localizedRecoveryOptionsIOS?.map((item) => item).toList(),
       'localizedRecoverySuggestionIOS': localizedRecoverySuggestionIOS,
       'localizedFailureReasonIOS': localizedFailureReasonIOS,
-      'nonOSError': nonOSError,
     };
   }
 
@@ -121,7 +120,6 @@ extension ZendeskErrorExtensions on ZendeskError {
       localizedRecoverySuggestionIOS:
           json['localizedRecoverySuggestionIOS'] as String?,
       localizedFailureReasonIOS: json['localizedFailureReasonIOS'] as String?,
-      nonOSError: json['nonOSError'] as String?,
     );
   }
 }

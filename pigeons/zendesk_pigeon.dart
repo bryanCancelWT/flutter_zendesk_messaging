@@ -63,16 +63,6 @@ class ZendeskError {
   /// - NULLABLE natively
   final String? localizedFailureReasonIOS;
 
-  ///
-  ///
-  ///
-  /// Other
-  ///
-  ///
-  ///
-
-  final String? nonOSError;
-
   /// a combination of
   /// - https://developer.apple.com/documentation/foundation/nserror
   /// - https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/
@@ -89,9 +79,6 @@ class ZendeskError {
     this.localizedRecoveryOptionsIOS,
     this.localizedRecoverySuggestionIOS,
     this.localizedFailureReasonIOS,
-
-    /// other
-    this.nonOSError,
   });
 }
 
@@ -118,11 +105,9 @@ abstract class ZendeskApi {
   void startInitialize(String channelKey);
   void startLoginUser(String jwt);
   void startLogoutUser();
-  void startGetUnreadMessageCount();
 
-  /// this goes pretty much only one way - return an error or don't
-  @async
-  ZendeskError? show();
+  int startGetUnreadMessageCount();
+  void show();
 }
 
 @FlutterApi()
@@ -138,8 +123,4 @@ abstract class ZendeskCallbacks {
   /// complete [ZendeskApi.startLogoutUser]
   void logoutUserSuccess();
   void logoutUserError(ZendeskError error);
-
-  /// complete [ZendeskApi.startGetUnreadMessageCount]
-  void getUnreadMessageCountSuccess(int count);
-  void getUnreadMessageCountError(ZendeskError error);
 }

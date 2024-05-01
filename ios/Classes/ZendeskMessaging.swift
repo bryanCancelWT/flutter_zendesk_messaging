@@ -48,28 +48,29 @@ public class ZendeskMessaging: NSObject {
     /// Call Zendesk.initialize(withChannelKey: ,messagingFactory: ,completionHandler:).
     /// 
     /// If successful, an instance of messaging is returned. You don't have to keep a reference to the returned instance because you can access it anytime by using Zendesk.instance.
-    func initialize(channelKey: String?) {
+    func initialize(result: @escaping FlutterResult, channelKey: String?) {
         if (self.zendeskPlugin?.isInitialized == true) {
-            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.alreadyInitialized])
+            result(FlutterError(code: alreadyInitialized, message: "", details: nil))
             return
         }
 
         if(channelKey == nil || channelKey!.isEmpty){
-            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.invalidParameter])
+            result(FlutterError(code: invalidParameter, message: "", details: nil))
             return
         }
 
         Zendesk.initialize(withChannelKey: channelKey!, messagingFactory: DefaultMessagingFactory()) { result in
             DispatchQueue.main.async {
                 if case let .failure(error) = result {
-                    self.zendeskPlugin?.isInitialized = false
-                    self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: self._errorToMap(error: error))
+                    self.channel?.invokeMethod(initializeFailure, arguments: self._errorToMap(error: error))
                 } else {
                     self.zendeskPlugin?.isInitialized = true
-                    self.channel?.invokeMethod(ZendeskMessaging.initializeSuccess, arguments: [:])
+                    self.channel?.invokeMethod(initializeSuccess, arguments: [:])
                 }
             }
         }
+
+        result(nil)
     }
 
     
@@ -77,24 +78,28 @@ public class ZendeskMessaging: NSObject {
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/getting_started/#show-the-conversation
     /// 
     /// Call the messagingViewController() method as part of the messaging reference returned during initialization.
-    func show(rootViewController: UIViewController?)  -> [String: Any]? {
+    func show(result: @escaping FlutterResult, rootViewController: UIViewController?) {
         if (self.zendeskPlugin?.isInitialized == false) {
-            return ["nonOSError": ZendeskMessaging.notInitialized]
+            result(FlutterError(code: notInitialized, message: "", details: nil))
+            return
         }
 
         guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() as? UIViewController else {
-            return ["nonOSError": ZendeskMessaging.noMessagingController]
+            result(FlutterError(code: noMessagingController, message: "", details: nil))
+            return
         }
 
         guard let rootViewController = rootViewController else {
-            return ["nonOSError": ZendeskMessaging.noRootController]
+            result(FlutterError(code: noRootController, message: "", details: nil))
+            return
         }
 
         // Check if rootViewController is already presenting another view controller
         if let presentedVC = rootViewController.presentedViewController {
             // Check if the presentedVC is the same instance as messagingViewController
             if presentedVC === messagingViewController {
-                return nil
+                result(nil)
+                return
             } else {
                 // Dismiss current and present new, or just present new
                 presentedVC.dismiss(animated: true) {
@@ -106,7 +111,7 @@ public class ZendeskMessaging: NSObject {
             rootViewController.present(messagingViewController, animated: true, completion: nil)
         }
 
-        return nil
+        result(nil)
     }
 
     /// Unread Messages
@@ -119,13 +124,16 @@ public class ZendeskMessaging: NSObject {
     /// In addition, you can retrieve the current total number of unread messages by calling getUnreadMessageCount() on Messaging on your Zendesk SDK instance.
     ///
     /// You can find a demo app showcasing this feature in our Zendesk SDK Demo app github.
-    func getUnreadMessageCount() {
+    func getUnreadMessageCount(result: @escaping FlutterResult) {
         if (self.zendeskPlugin?.isInitialized == false) {
-            self.channel?.invokeMethod(ZendeskMessaging.getUnreadMessageCountFailure, arguments: ["nonOSError": ZendeskMessaging.notInitialized])
+            result(FlutterError(code: notInitialized, message: "", details: nil))
+            return
         }
 
+        /// TODO: handle the edge case here
         let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
-        self.channel?.invokeMethod(ZendeskMessaging.getUnreadMessageCountSuccess, arguments: ["result": count ?? 0])
+
+        result(count ?? 0)
      }
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clickable-links-delegate
@@ -171,14 +179,14 @@ public class ZendeskMessaging: NSObject {
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#loginuser
     /// 
     /// To authenticate a user call the loginUser API with your own JWT.
-    func loginUser(jwt: String?) {
+    func loginUser(result: @escaping FlutterResult, jwt: String) {
         if (self.zendeskPlugin?.isInitialized == false) {
-            self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["nonOSError": ZendeskMessaging.notInitialized])
+            result(FlutterError(code: notInitialized, message: "", details: nil))
             return
         }
 
         if(jwt == nil || jwt!.isEmpty){
-            self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["nonOSError": ZendeskMessaging.invalidParameter])
+            result(FlutterError(code: invalidParameter, message: "", details: nil))
             return
         }
 
@@ -187,14 +195,16 @@ public class ZendeskMessaging: NSObject {
                 switch result {
                 case .success(let user):
                     self.zendeskPlugin?.isLoggedIn = true
-                    self.channel?.invokeMethod(ZendeskMessaging.loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
+                    self.channel?.invokeMethod(loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
                     break
                 case .failure(let error):
-                    self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: self._errorToMap(error: error))
+                    self.channel?.invokeMethod(loginFailure, arguments: self._errorToMap(error: error))
                     break
                 }
             }
         }
+
+        result(nil)
     }
     
     /// LogoutUser
@@ -206,9 +216,9 @@ public class ZendeskMessaging: NSObject {
     /// including their conversation history. 
     /// Please note that there is no way for us to recover this data, so only use this for testing purposes. 
     /// The next time the unauthenticated user enters the conversation screen a new user and conversation will be created for them.
-    func logoutUser() {
+    func logoutUser(result: @escaping FlutterResult) {
         if (self.zendeskPlugin?.isInitialized == false) {
-            self.channel?.invokeMethod(ZendeskMessaging.logoutFailure, arguments: ["nonOSError": ZendeskMessaging.notInitialized])
+            result(FlutterError(code: notInitialized, message: "", details: nil))
             return
         }
         
@@ -217,10 +227,10 @@ public class ZendeskMessaging: NSObject {
                 switch result {
                 case .success:
                     self.zendeskPlugin?.isLoggedIn = false
-                    self.channel?.invokeMethod(ZendeskMessaging.logoutSuccess, arguments: [])
+                    self.channel?.invokeMethod(logoutSuccess, arguments: [])
                     break
                 case .failure(let error):
-                    self.channel?.invokeMethod(ZendeskMessaging.logoutFailure, arguments: ["nonOSError": ZendeskMessaging.failedToLogout])
+                    self.channel?.invokeMethod(logoutFailure, arguments: self._errorToMap(error: error))
                     break
                 }
             }

@@ -21,9 +21,6 @@ extension ZendeskErrorExtn on ZendeskError {
       localizedRecoveryOptionsIOS: args?["localizedRecoveryOptionsIOS"],
       localizedRecoverySuggestionIOS: args?["localizedRecoverySuggestionIOS"],
       localizedFailureReasonIOS: args?["localizedFailureReasonIOS"],
-
-      /// ! null since anything here is an OS error
-      nonOSError: args?["nonOSError"],
     );
   }
 }
@@ -232,28 +229,13 @@ class ZendeskServiceChannel implements ZendeskService {
   ///
   @override
   Future<Result<int, Failure>> getUnreadMessageCount() async {
-    Completer<Result<int, Failure>> completer =
-        Completer<Result<int, Failure>>();
-
     try {
-      _setObserver(ZendeskMessagingMessageType.getUnreadMessageCountSuccess,
-          (Map? args) {
-        completer.complete(Result<int, Failure>.success(args?['result'] ?? 0));
-      });
-
-      _setObserver(ZendeskMessagingMessageType.getUnreadMessageCountFailure,
-          (Map? args) {
-        completer.complete(Result<int, Failure>.error(
-          Failure(ZendeskErrorExtn.fromArgs(args)),
-        ));
-      });
-
-      await _channel.invokeMethod('getUnreadMessageCount');
+      return Result<int, Failure>.success(
+        await _channel.invokeMethod('getUnreadMessageCount'),
+      );
     } on PlatformException catch (e, s) {
       return Result<int, Failure>.error(Failure(e, s));
     }
-
-    return await completer.future;
   }
 
   ///
@@ -267,10 +249,8 @@ class ZendeskServiceChannel implements ZendeskService {
   @override
   Future<Failure?> show() async {
     try {
-      dynamic result = await _channel.invokeMethod('show');
-      Failure? fail =
-          result != null ? Failure(ZendeskErrorExtn.fromArgs(result)) : null;
-      return fail;
+      await _channel.invokeMethod('show');
+      return null;
     } on PlatformException catch (e, s) {
       return Failure(e, s);
     }

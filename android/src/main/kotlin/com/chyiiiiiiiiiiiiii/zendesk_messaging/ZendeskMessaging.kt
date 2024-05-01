@@ -48,19 +48,19 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// If you don't have admin access to Zendesk, ask a Zendesk admin to get the information for you.
     ///
     /// The snippets below give an example of a Messaging initialization in both Kotlin and Java.
-    fun initialize(channelKey: String?) {
-        if (plugin.isInitialized) {
-            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to alreadyInitialized))
+    fun initialize(result: MethodChannel.Result, channelKey: String?) {
+        if (plugin.isInitialized == true) {
+            result.error(alreadyInitialized, "", null)
             return
         }
 
         if (channelKey.isNullOrEmpty()) {
-            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to invalidParameter))
+            result.error(invalidParameter, "", null)
             return
         }
 
         val activity = plugin.activity ?: run {
-            channel.invokeMethod(initializeFailure, mapOf("nonOSError" to nullActivity))
+            result.error(nullActivity, "", null)
             return
         }
 
@@ -76,6 +76,8 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             },
             messagingFactory = DefaultMessagingFactory(),
         )
+
+        result.success(null)
     }
 
     /// Show the conversation
@@ -83,15 +85,20 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// 
     /// If Zendesk.initialize() is successful, you can use the code snippets below anywhere in your app to show the conversation screen.
     /// If Zendesk.initialize() is not successful, a stub implementation of the Zendesk class is returned that logs to the console.
-    fun show(): Map<String, Any?>? {
+    fun show(result: MethodChannel.Result) {
         if (plugin.isInitialized == false) {
-            return mapOf("nonOSError" to notInitialized)
+            result.error(notInitialized, "", null)
+            return
         }
 
-        val activity = plugin.activity ?: return mapOf("nonOSError" to nullActivity)
+        val activity = plugin.activity ?: run {
+            result.error(nullActivity, "", null)
+            return
+        }
 
         Zendesk.instance.messaging.showMessaging(activity, Intent.FLAG_ACTIVITY_NEW_TASK)
-        return null
+
+        result.success(null)
     }
 
 
@@ -105,16 +112,16 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// In addition, you can retrieve the current total number of unread messages by calling getUnreadMessageCount() on Messaging on your Zendesk SDK instance.
     /// 
     /// You can find a demo app showcasing this feature in our Zendesk SDK Demo app github.
-    fun getUnreadMessageCount() {
+    fun getUnreadMessageCount(result: MethodChannel.Result) {
         if(plugin.isInitialized == false) {
-            channel.invokeMethod(getUnreadMessageCountFailure, mapOf("nonOSError" to notInitialized))
+            result.error(notInitialized, "", null)
             return
         }
 
         try {
-            channel.invokeMethod(getUnreadMessageCountSuccess, mapOf("result" to Zendesk.instance.messaging.getUnreadMessageCount()))
+            result.success(Zendesk.instance.messaging.getUnreadMessageCount())
         }catch (error: Throwable){
-            channel.invokeMethod(getUnreadMessageCountFailure, mapOf(_errorToMap(error)))
+            result.error(getUnreadMessageCountFailure, "", null)
         }
     }
 
@@ -160,14 +167,14 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#loginuser
     ///
     /// To authenticate a user call the loginUser API with your own JWT. You can create your own JWT following our Creating a JWT token section.
-    fun loginUser(jwt: String?) {
+    fun loginUser(result: MethodChannel.Result, jwt: String?) {
         if (plugin.isInitialized == false) {
-            channel.invokeMethod(loginFailure, mapOf("nonOSError" to notInitialized))
+            result.error(notInitialized, "", null)
             return
         }
 
         if (jwt.isNullOrEmpty()) {
-            channel.invokeMethod(loginFailure, mapOf("nonOSError" to invalidParameter))
+            result.error(invalidParameter, "", null)
             return
         }
 
@@ -184,6 +191,8 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             { error: Throwable? ->
                 channel.invokeMethod(loginFailure, _errorToMap(error))
             })
+    
+        result.success(null)
     }
 
     /// LogoutUser
@@ -195,9 +204,9 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// including their conversation history. 
     /// Please note that there is no way for us to recover this data, so only use this for testing purposes. 
     /// The next time the unauthenticated user enters the conversation screen a new user and conversation will be created for them.
-    fun logoutUser() {
+    fun logoutUser(result: MethodChannel.Result) {
         if(plugin.isInitialized == false) {
-            channel.invokeMethod(logoutFailure, mapOf("nonOSError" to notInitialized))
+            result.error(notInitialized, "", null)
             return
         }
 
@@ -206,13 +215,15 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
                 Zendesk.instance.logoutUser(successCallback = {
                     plugin.isLoggedIn = false
                     channel.invokeMethod(logoutSuccess, null)
-                }, failureCallback = {
-                    channel.invokeMethod(logoutFailure, mapOf("nonOSError" to failedToLogout))
+                }, failureCallback = { error ->
+                    channel.invokeMethod(logoutFailure, _errorToMap(error))
                 })
             } catch (error: Throwable) {
-                channel.invokeMethod(logoutFailure, mapOf("nonOSError" to _errorToMap(error)))
+                channel.invokeMethod(logoutFailure, _errorToMap(error))
             }
         }
+
+        result.success(null)
     }
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#visitor-path
