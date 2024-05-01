@@ -39,6 +39,21 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "logoutUser" -> {
                 zendeskMessaging.logoutUser(result)
             }
+            "setConversationTags" -> {
+                zendeskMessaging.setConversationTags(result, call.argument<List<String>>("tags"))
+            }
+            "clearConversationTags" -> {
+                zendeskMessaging.clearConversationTags(result)
+            }
+            "setConversationFields" -> {
+                zendeskMessaging.setConversationFields(result, call.argument<Map<String, String>>("fields"))
+            }
+            "clearConversationFields" -> {
+                zendeskMessaging.clearConversationFields(result)
+            }
+            "invalidate" -> {
+                zendeskMessaging.invalidate(result)
+            }
             else -> {
                 result.notImplemented()
             }

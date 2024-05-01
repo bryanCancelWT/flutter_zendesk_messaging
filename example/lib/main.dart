@@ -33,8 +33,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    /// TODO: eventually uncomment
-    /// ZendeskMessaging.invalidate();
+    ZendeskMessaging.invalidate();
     super.dispose();
   }
 
@@ -69,16 +68,6 @@ class _MyAppState extends State<MyApp> {
                         Text('Get unread message count - $unreadMessageCount'),
                   ),
                 ],
-                /*
-                ElevatedButton(
-                  onPressed: () => _setTags(),
-                  child: const Text("Add tags"),
-                ),
-                ElevatedButton(
-                  onPressed: () => _clearTags(),
-                  child: const Text("Clear tags"),
-                ),
-                */
                 ElevatedButton(
                   onPressed: () => _login(),
                   child: const Text("Login"),
@@ -87,11 +76,6 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _logout(),
                   child: const Text("Logout"),
                 ),
-                /*
-                ElevatedButton(
-                  onPressed: () => _checkUserLoggedIn(),
-                  child: const Text("Check LoggedIn"),
-                ),
                 ElevatedButton(
                   onPressed: () => _setFields(),
                   child: const Text("Add Fields"),
@@ -99,6 +83,19 @@ class _MyAppState extends State<MyApp> {
                 ElevatedButton(
                   onPressed: () => _clearFields(),
                   child: const Text("Clear Fields"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _setTags(),
+                  child: const Text("Add tags"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _clearTags(),
+                  child: const Text("Clear tags"),
+                ),
+                /*
+                ElevatedButton(
+                  onPressed: () => _checkUserLoggedIn(),
+                  child: const Text("Check LoggedIn"),
                 ),
                 */
               ],
@@ -123,6 +120,32 @@ class _MyAppState extends State<MyApp> {
       } else {
         channelMessages = _setFailure(failure);
       }
+    });
+  }
+
+  void _show() async {
+    Failure? failure = await ZendeskMessaging.show();
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
+  }
+
+  void _getUnreadMessageCount() async {
+    Result<int, Failure> result =
+        await ZendeskMessaging.getUnreadMessageCount();
+    if (mounted == false) return;
+    setState(() {
+      result.when((int success) {
+        channelMessages = "$success";
+        unreadMessageCount = success;
+      }, (Failure failure) {
+        channelMessages = _setFailure(failure);
+      });
     });
   }
 
@@ -154,33 +177,56 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _getUnreadMessageCount() async {
-    Result<int, Failure> result =
-        await ZendeskMessaging.getUnreadMessageCount();
+  void _setFields() async {
+    Map<String, String> fieldsMap = {};
+    fieldsMap["field1"] = "Value 1";
+    fieldsMap["field2"] = "Value 2";
+    Failure? failure = await ZendeskMessaging.setConversationFields(fieldsMap);
     if (mounted == false) return;
     setState(() {
-      result.when((int success) {
-        channelMessages = "$success";
-        unreadMessageCount = success;
-      }, (Failure failure) {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
         channelMessages = _setFailure(failure);
-      });
+      }
+    });
+  }
+
+  void _clearFields() async {
+    Failure? failure = await ZendeskMessaging.clearConversationFields();
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
     });
   }
 
   void _setTags() async {
-    /// TODO: eventually uncomment
-    /*
-    final tags = ['tag1', 'tag2', 'tag3'];
-    await ZendeskMessaging.setConversationTags(tags);
-    */
+    List<String> tags = ['tag1', 'tag2', 'tag3'];
+    Failure? failure = await ZendeskMessaging.setConversationTags(tags);
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
   }
 
   void _clearTags() async {
-    /// TODO: eventually uncomment
-    /*
-    await ZendeskMessaging.clearConversationTags();
-    */
+    Failure? failure = await ZendeskMessaging.clearConversationTags();
+    if (mounted == false) return;
+    setState(() {
+      if (failure == null) {
+        channelMessages = "";
+      } else {
+        channelMessages = _setFailure(failure);
+      }
+    });
   }
 
   void _checkUserLoggedIn() async {
@@ -198,37 +244,6 @@ class _MyAppState extends State<MyApp> {
       );
     }
     */
-  }
-
-  void _setFields() async {
-    /// TODO: eventually uncomment
-    /*
-    Map<String, String> fieldsMap = {};
-
-    fieldsMap["field1"] = "Value 1";
-    fieldsMap["field2"] = "Value 2";
-
-    await ZendeskMessaging.setConversationFields(fieldsMap);
-    */
-  }
-
-  void _clearFields() async {
-    /// TODO: eventually uncomment
-    /*
-    await ZendeskMessaging.clearConversationFields();
-    */
-  }
-
-  void _show() async {
-    Failure? failure = await ZendeskMessaging.show();
-    if (mounted == false) return;
-    setState(() {
-      if (failure == null) {
-        channelMessages = "";
-      } else {
-        channelMessages = _setFailure(failure);
-      }
-    });
   }
 
   _setFailure(Failure failure) {

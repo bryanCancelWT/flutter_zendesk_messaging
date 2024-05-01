@@ -103,11 +103,15 @@ abstract class ZendeskApi {
   ///
 
   void startInitialize(String channelKey);
+  void show();
+  int startGetUnreadMessageCount();
   void startLoginUser(String jwt);
   void startLogoutUser();
-
-  int startGetUnreadMessageCount();
-  void show();
+  void setConversationTags(List<String> tags);
+  void clearConversationTags();
+  void setConversationFields(Map<String, String> fields);
+  void clearConversationFields();
+  void invalidate();
 }
 
 @FlutterApi()

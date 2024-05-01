@@ -268,7 +268,21 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// Any	value of custom ticket field
     /// 
     /// Note: Supported types for Any are string, number and boolean.
-    /// TODO: 
+    fun setConversationFields(result: MethodChannel.Result, fields: Map<String, String>?){
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        if (fields == null) {
+            result.error(invalidParameter, "", null)
+            return
+        }
+
+        Zendesk.instance.messaging.setConversationFields(fields)
+
+        result.success(null)
+    }
 
     /// Clear Conversation Fields
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#clear-conversation-fields
@@ -277,7 +291,16 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// To do this, use the clearConversationFields API. This removes all stored conversation fields from the SDK storage.
     ///
     /// Note: This API does not affect conversation fields already applied to the conversation.
-    /// TODO: 
+    fun clearConversationFields(result: MethodChannel.Result){
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        Zendesk.instance.messaging.clearConversationFields()
+
+        result.success(null)
+    }
 
     /// 
     ///
@@ -298,7 +321,21 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     ///
     /// Note: Conversation tags are not immediately associated with a conversation when the API is called. 
     /// It will only be applied to a conversation when end users either start a new conversation or send a new message in an existing conversation.
-    /// TODO: 
+    fun setConversationTags(result: MethodChannel.Result, tags: List<String>?){
+         if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        if (tags == null) {
+            result.error(invalidParameter, "", null)
+            return
+        }
+
+        Zendesk.instance.messaging.setConversationTags(tags)
+
+        result.success(null)
+    }
 
     /// Clear Conversation Tags
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#clear-conversation-tags
@@ -307,7 +344,16 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// To do this, use the clearConversationTags API. This removes all stored conversation tags from the SDK storage.
     ///
     /// Note: This API does not affect conversation tags already applied to the conversation.
-    /// TODO: 
+    fun clearConversationTags(result: MethodChannel.Result){
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        Zendesk.instance.messaging.clearConversationTags()
+
+        result.success(null)
+    }
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/advanced_integration/#postback-buttons-in-messaging
 
@@ -319,7 +365,17 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     /// This ensures that unused data does not accumulate over time, freeing up system resources. 
     /// When the end user logs out, the Zendesk SDK removes all user details from local storages and terminates the real-time connection. 
     /// Invalidating the Zendesk SDK instance means that no messages nor notifications will be received.
-    /// TODO: 
+    fun invalidate(result: MethodChannel.Result) {
+        if(plugin.isInitialized == false) {
+            result.error(notInitialized, "", null)
+            return
+        }
+
+        Zendesk.invalidate()
+        plugin.isInitialized = false;
+
+        result.success(null)
+    }
 }
 
 val Throwable.zendeskError: Map<String, String>

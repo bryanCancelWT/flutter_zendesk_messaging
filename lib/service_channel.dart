@@ -170,6 +170,43 @@ class ZendeskServiceChannel implements ZendeskService {
   ///
   ///
   ///
+  /// Show
+  ///
+  ///
+  ///
+
+  @override
+  Future<Failure?> show() async {
+    try {
+      await _channel.invokeMethod('show');
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  ///
+  ///
+  ///
+  /// Get Unread Message Count
+  ///
+  ///
+  ///
+
+  @override
+  Future<Result<int, Failure>> getUnreadMessageCount() async {
+    try {
+      return Result<int, Failure>.success(
+        await _channel.invokeMethod('getUnreadMessageCount'),
+      );
+    } on PlatformException catch (e, s) {
+      return Result<int, Failure>.error(Failure(e, s));
+    }
+  }
+
+  ///
+  ///
+  ///
   /// Login User
   ///
   ///
@@ -234,33 +271,55 @@ class ZendeskServiceChannel implements ZendeskService {
   ///
   ///
   ///
-  /// Get Unread Message Count
+  /// Other
   ///
   ///
   ///
+
   @override
-  Future<Result<int, Failure>> getUnreadMessageCount() async {
+  Future<Failure?> setConversationTags(List<String> tags) async {
     try {
-      return Result<int, Failure>.success(
-        await _channel.invokeMethod('getUnreadMessageCount'),
-      );
+      await _channel.invokeMethod('setConversationTags', {'tags': tags});
+      return null;
     } on PlatformException catch (e, s) {
-      return Result<int, Failure>.error(Failure(e, s));
+      return Failure(e, s);
     }
   }
 
-  ///
-  ///
-  ///
-  /// No Completers Required
-  ///
-  ///
-  ///
+  @override
+  Future<Failure?> clearConversationTags() async {
+    try {
+      await _channel.invokeMethod('clearConversationTags');
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
 
   @override
-  Future<Failure?> show() async {
+  Future<Failure?> setConversationFields(Map<String, String> fields) async {
     try {
-      await _channel.invokeMethod('show');
+      await _channel.invokeMethod('setConversationFields', {'fields': fields});
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> clearConversationFields() async {
+    try {
+      await _channel.invokeMethod('clearConversationFields');
+      return null;
+    } on PlatformException catch (e, s) {
+      return Failure(e, s);
+    }
+  }
+
+  @override
+  Future<Failure?> invalidate() async {
+    try {
+      await _channel.invokeMethod('invalidate');
       return null;
     } on PlatformException catch (e, s) {
       return Failure(e, s);

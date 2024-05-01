@@ -284,7 +284,17 @@ public class ZendeskMessaging: NSObject {
     /// AnyHashable	value of the custom ticket field
     /// 
     /// Note: The supported types for AnyHashable are string, number and boolean.
-    /// TODO: 
+    func setConversationFields(result: @escaping FlutterResult, fields: [String: String]?) {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            result(FlutterError(code: ZendeskMessaging.notInitialized, message: "", details: nil))
+            return
+        }
+
+        /// TODO: handle the edge case here
+        Zendesk.instance?.messaging?.setConversationFields(fields)
+
+        result(nil)
+    }
 
     /// Clear Conversation Fields
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clear-conversation-fields
@@ -293,7 +303,17 @@ public class ZendeskMessaging: NSObject {
     /// To do this, use the clearConversationFields API. This removes all stored conversation fields from the SDK storage.
     ///
     /// Note: This API does not affect conversation fields already applied to the conversation.
-    /// TODO: 
+    func clearConversationFields(result: @escaping FlutterResult) {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            result(FlutterError(code: ZendeskMessaging.notInitialized, message: "", details: nil))
+            return
+        }
+
+        /// TODO: handle the edge case here
+        Zendesk.instance?.messaging?.clearConversationFields()
+
+        result(nil)
+    }
 
     /// 
     ///
@@ -314,7 +334,17 @@ public class ZendeskMessaging: NSObject {
     /// 
     /// Note: Conversation tags are not immediately associated with a conversation when the API is called. 
     /// It will only be applied to a conversation when end users either start a new conversation or send a new message in an existing conversation.
-    /// TODO: 
+    func setConversationTags(result: @escaping FlutterResult, tags: [String]?) {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            result(FlutterError(code: ZendeskMessaging.notInitialized, message: "", details: nil))
+            return
+        }
+
+        /// TODO: handle the edge case here
+        Zendesk.instance?.messaging?.setConversationTags(tags)
+
+        result(nil)
+    }
 
     /// Clear Conversation Tags
     /// https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#clear-conversation-tags
@@ -323,7 +353,17 @@ public class ZendeskMessaging: NSObject {
     /// To do this, use the clearConversationTags API. This removes all stored conversation tags from the SDK storage.
     /// 
     /// Note: This API does not affect conversation tags already applied to the conversation.
-    /// TODO: 
+    func clearConversationTags(result: @escaping FlutterResult) {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            result(FlutterError(code: ZendeskMessaging.notInitialized, message: "", details: nil))
+            return
+        }
+
+        /// TODO: handle the edge case here
+        Zendesk.instance?.messaging?.clearConversationTags()
+
+        result(nil)
+    }
 
     /// TODO https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/ios/advanced_integration/#postback-buttons-in-messaging
 
@@ -337,7 +377,17 @@ public class ZendeskMessaging: NSObject {
     /// If clearing storage not intended to be performed during invalidation, it will be cleared when the end user logs out. 
     /// The default value of the parameter is set to false to keep the previous behaviour of the SDK. 
     /// It is important to remember that once the Zendesk SDK is invalidated no messages nor notifications will be received.
-    /// TODO: 
+    func invalidate(result: @escaping FlutterResult) {
+        if (self.zendeskPlugin?.isInitialized == false) {
+            result(FlutterError(code: ZendeskMessaging.notInitialized, message: "", details: nil))
+            return
+        }
+
+        Zendesk.invalidate()
+        self.zendeskPlugin?.isInitialized = false
+
+        result(nil)
+    }
 }
 
 extension NSError {
