@@ -48,10 +48,14 @@ class _MyAppState extends State<MyApp> {
             padding: const EdgeInsets.all(20),
             child: ListView(
               children: [
-                Text(channelMessages ?? "N/A"),
-                const SizedBox(
-                  height: 20,
-                ),
+                if (channelMessages != null)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(channelMessages ?? ""),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ElevatedButton(
                   onPressed: () => _init(),
                   child: const Text("Initialize"),
