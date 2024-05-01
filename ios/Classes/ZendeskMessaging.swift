@@ -303,7 +303,7 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        Zendesk.instance?.messaging?.setConversationFields(fields)
+        Zendesk.instance?.messaging?.setConversationFields(fields!)
 
         result(nil)
     }
@@ -366,7 +366,7 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        Zendesk.instance?.messaging?.setConversationTags(tags)
+        Zendesk.instance?.messaging?.setConversationTags(tags!)
 
         result(nil)
     }
