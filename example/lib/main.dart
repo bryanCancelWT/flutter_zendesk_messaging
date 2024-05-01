@@ -115,6 +115,7 @@ class _MyAppState extends State<MyApp> {
       androidChannelKey: androidChannelKey,
       iosChannelKey: iosChannelKey,
     );
+
     if (mounted == false) return;
     setState(() {
       if (failure == null) {

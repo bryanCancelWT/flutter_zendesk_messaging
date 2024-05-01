@@ -33,7 +33,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
             case "initialize":
                 zendeskMessaging.initialize(result: result, channelKey: arguments?["channelKey"] as? String)
             case "show":
-                zendeskMessaging.show(result: result, rootViewController: UIApplication.shared.delegate?.window??.rootViewController))
+                zendeskMessaging.show(result: result, rootViewController: UIApplication.shared.delegate?.window??.rootViewController)
             case "getUnreadMessageCount":
                 zendeskMessaging.getUnreadMessageCount(result: result)
                 break
