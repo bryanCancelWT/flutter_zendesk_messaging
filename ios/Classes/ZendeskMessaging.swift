@@ -390,11 +390,6 @@ public class ZendeskMessaging: NSObject {
     }
 
     func getIsInitialized(result: @escaping FlutterResult) {
-        if (self.zendeskPlugin?.isInitialized == false) {
-            result(FlutterError(code: ZendeskMessaging.notInitialized, message: "", details: nil))
-            return
-        }
-
         result(self.zendeskPlugin?.isInitialized == true)
     }
 

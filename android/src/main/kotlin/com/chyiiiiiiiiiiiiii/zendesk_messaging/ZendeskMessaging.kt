@@ -378,11 +378,6 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     }
 
     fun getIsInitialized(result: MethodChannel.Result) {
-        if(plugin.isInitialized == false) {
-            result.error(notInitialized, "", null)
-            return
-        }
-
         result.success(plugin.isInitialized == true)
     }
 

@@ -176,10 +176,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _setFields() async {
-    Map<String, String> fieldsMap = {};
-    fieldsMap["field1"] = "Value 1";
-    fieldsMap["field2"] = "Value 2";
-    Failure? failure = await ZendeskMessaging.setConversationFields(fieldsMap);
+    Failure? failure =
+        await ZendeskMessaging.setConversationFields({"field1": "Value 1"});
     if (mounted == false) return;
     setState(() {
       if (failure == null) {

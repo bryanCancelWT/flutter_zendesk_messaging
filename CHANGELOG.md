@@ -1,3 +1,8 @@
+## 3.0.0
+
+* properly bubbling up all errors at all levels
+* setup pigeon channels for usage very soon - it'll make updates easier in the future
+
 ## 2.9.0
 
 * Upgrade zendesk-messaging sdk version to 2.19.1 to have access to iOS privacy manifest
